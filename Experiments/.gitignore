@@ -1,0 +1,21 @@
+# Ignore raw generation data
+Minority/
+
+# Images (binary, large)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+
+# Model files
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# Editor
+*.swp
+*~
+
+**/*.json

@@ -21,7 +21,11 @@ Thumbs.db
 
 # === Project: large data & artifacts ===
 Datasets/
-Experiments/
+Experiments/**/*.png
+Experiments/**/*.jpg
+Experiments/**/*.jpeg
+Experiments/**/*.webp
+Experiments/**/*.gif
 Models/
 analyse/
 
