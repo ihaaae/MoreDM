@@ -1,0 +1,44 @@
+# === IDE / Editor ===
+.cursor/
+.idea/
+.zed/
+.ropeproject/
+*.swp
+*.swo
+*~
+
+# === Python ===
+.python-version
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.ipynb_checkpoints/
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === Project: large data & artifacts ===
+Datasets/
+Experiments/
+Models/
+analyse/
+
+# === Project: source code (tracked separately or not yet) ===
+bin/
+metrics/
+minority/
+t2ls/
+memory-ds/
+man/
+
+# === Project: build / lock ===
+pyproject.toml
+uv.lock
+
+# === Misc ===
+.undo_backup_*/
+readme.md
+README.md
