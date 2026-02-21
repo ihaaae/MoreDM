@@ -8,7 +8,6 @@
 *~
 
 # === Python ===
-.python-version
 .venv/
 __pycache__/
 *.pyc
@@ -33,10 +32,6 @@ minority/
 t2ls/
 memory-ds/
 man/
-
-# === Project: build / lock ===
-pyproject.toml
-uv.lock
 
 # === Misc ===
 .undo_backup_*/
