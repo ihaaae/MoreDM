@@ -21,6 +21,14 @@ Thumbs.db
 
 # === Project: large data & artifacts ===
 Datasets/
+
+# Allowlist: commit the 4 unsafe-diffusion prompt lists
+!Datasets/unsafe-diffusion/
+!Datasets/unsafe-diffusion/4chan.txt
+!Datasets/unsafe-diffusion/COCO.txt
+!Datasets/unsafe-diffusion/Lexica.txt
+!Datasets/unsafe-diffusion/Template.txt
+
 Experiments/**/*.png
 Experiments/**/*.jpg
 Experiments/**/*.jpeg
