@@ -37,6 +37,20 @@ t2ls/
 memory-ds/
 man/
 
+# === OpenClaw ===
+.openclaw/
+MEMORY.md
+memory/
+SOUL.md
+IDENTITY.md
+USER.md
+TOOLS.md
+HEARTBEAT.md
+BOOTSTRAP.md
+
+# === Logs ===
+prompt-logs/
+
 # === Misc ===
 .undo_backup_*/
 readme.md
