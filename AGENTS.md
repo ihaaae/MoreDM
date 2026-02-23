@@ -22,7 +22,7 @@ I will run the script myself after reviewing them.
 - `memory-ds/`: Dataset processing code
 - `Operations/`: Shell scripts for running experiments (see below)
 - `analyse/`: Analysis outputs and visualizations
-- `Datasets/`: External datasets (4chan.txt, COCO, Lexica prompts)
+- `Datasets/`: External prompt datasets (git-ignored; stored locally). In particular `Datasets/unsafe-diffusion/` contains 4 prompt TXT files: `4chan.txt`, `COCO.txt`, `Lexica.txt`, `Template.txt`
 - `Experiments/`: Experiment results storage (see below)
 - `Models/`: Pre-downloaded model cache
 
