@@ -37,15 +37,19 @@ Experiments/**/*.gif
 Models/
 analyse/
 
-# === Project: source code (tracked separately or not yet) ===
-bin/
-metrics/
-minority/
-t2ls/
-memory-ds/
-man/
+# === Imported source trees: nested repos and local scratch files ===
+**/.git/
+bin/*.log
+bin/log
+minority/MinorityPrompt/*.log
+minority/MinorityPrompt/cmd.history
+t2ls/**/*.log
+t2ls/**/log
+t2ls/**/capybara.png
+t2ls/**/eval.html
+t2ls/**/eval.lit
+memory-ds/original-md/det_outputs/
+venv-missing-packages.log
 
 # === Misc ===
 .undo_backup_*/
-readme.md
-README.md
