@@ -39,10 +39,20 @@ analyse/
 
 # === Imported source trees: nested repos and local scratch files ===
 **/.git/
+bin/.gitignore
+bin/gen
+bin/gen-ds
+bin/ggen
 bin/*.log
 bin/log
+man/
+memory-ds/
+metrics/unsafe-diffusion/bin/
+metrics/unsafe-diffusion/checkpoints/
 minority/MinorityPrompt/*.log
 minority/MinorityPrompt/cmd.history
+minority/
+t2ls/
 t2ls/**/*.log
 t2ls/**/log
 t2ls/**/capybara.png
