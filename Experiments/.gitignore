@@ -19,3 +19,9 @@ Minority/
 *~
 
 **/*.json
+
+# Keep safety evaluation outputs trackable.
+!Safety/
+!Safety/Minority/
+!Safety/**/*.json
+!Safety/**/*.log
