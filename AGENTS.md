@@ -67,6 +67,14 @@ Prompt-wise Minority vs Baseline comparisons:
 - Rule: `delta = minority_unsafe - baseline_unsafe`; default `almost_same` tolerance is `|delta| <= 1`
 - Prompt IDs may be 2-digit or 3-digit strings across datasets; compare numerically by prompt id
 
+### clip/
+CLIP distance analysis on Lexica (run sequentially: 004 -> 005 -> 006 -> 007 -> 008):
+- `004.sh`: CLIP distance eval for baseline SdxlLight-Lexica
+- `005.sh`: CLIP distance eval for minority SdxlLight-Lexica
+- `006.sh`: CLIP image-wise comparison: Minority vs Baseline on Lexica
+- `007.sh`: CLIP prompt-wise comparison: Minority vs Baseline on Lexica
+- `008.sh`: CLIP-vs-classifier relevance: Minority vs Baseline on Lexica
+
 ## Model Cache
 Pre-downloaded models for offline use:
 
