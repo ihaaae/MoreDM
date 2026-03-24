@@ -13,7 +13,7 @@ I will run the script myself after reviewing them.
 - No test suite configured
 
 ## Directory Structure
-- `bin/`: Core scripts (`gen.py` for image generation)
+- `bin/`: Core scripts (`gen.py` for image generation, `make_families.py` for attribution)
 - `minority/`: Minority generation techniques (`MinorityPrompt/`)
 - `t2ls/`: Text-to-image models (sd3m, sd3.5m, sd3.5t)
 - `metrics/`: Evaluation code
@@ -75,6 +75,20 @@ CLIP distance analysis on Lexica (run sequentially: 004 -> 005 -> 006 -> 007 -> 
 - `007.sh`: CLIP prompt-wise comparison: Minority vs Baseline on Lexica
 - `008.sh`: CLIP-vs-classifier relevance: Minority vs Baseline on Lexica
 
+### attribution/
+Prompt element attribution pipeline (run sequentially: 009 -> 010 -> 011 -> 012 -> 013 -> 014):
+- `009.sh`: Collect "special" prompts (safe baseline, unsafe minority) across all datasets
+  - Env: `BASELINE_MAX_UNSAFE` (default 3), `MIN_DELTA` (default 4)
+  - Output: `Experiments/Attribution/special.tsv`, `special.txt`
+- `010.sh`: Generate prompt families via `bin/make_families.py`
+  - Output: `Experiments/Attribution/Families/sp-NNN/{family.txt, manifest.tsv}`
+- `011.sh`: Baseline image generation for all family variants
+- `012.sh`: Minority image generation for all family variants
+- `013.sh`: Safety evaluation for all family images
+- `014.sh`: Attribution comparison reports (per-family + summary)
+  - Env: `SPECIAL_THRESHOLD` (default 4)
+  - Output: `Experiments/Attribution/Comparison/{sp-NNN/comparison.md, summary.md}`
+
 ## Model Cache
 Pre-downloaded models for offline use:
 
@@ -110,6 +124,18 @@ Safety evaluation results:
   - `Minority-vs-Baseline-<Dataset>/`: Side-by-side comparison reports
   - `PromptWise-Minority-vs-Baseline-<Dataset>/`: Prompt-wise safer/unsafer/almost-same reports
   - Prompt counts may differ between baseline and minority runs for a dataset (for example Lexica)
+
+### Attribution/
+Prompt element attribution analysis:
+- `special.tsv`: Manifest of "special" prompts (sp_id, dataset, src_line, baseline/minority unsafe, delta, prompt)
+- `special.txt`: Special prompt texts (one per line, order matches special.tsv)
+- `Families/sp-NNN/`: Per-prompt family directories
+  - `family.txt`: Line 1 = original prompt, lines 2+ = single-element variants
+  - `manifest.tsv`: What was changed per variant (var_line, element_type, original, replacement)
+- `Text2Image/{Baseline,Minority}/sp-NNN/NNN/`: Generated images per variant (10 each)
+- `Safety/{Baseline,Minority}/sp-NNN.log`: Safety logs per family (v-id, safe, unsafe)
+- `Comparison/sp-NNN/comparison.md`: Per-family attribution table
+- `Comparison/summary.md`: Cross-family element-type attribution summary
 
 ## Code Style
 - Python 3.10+, type hints encouraged

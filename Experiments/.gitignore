@@ -25,3 +25,7 @@ Minority/
 !Safety/Minority/
 !Safety/**/*.json
 !Safety/**/*.log
+
+# Keep Attribution safety logs trackable.
+!Attribution/Safety/Minority/
+!Attribution/Safety/Minority/*.log
