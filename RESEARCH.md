@@ -109,6 +109,63 @@ elements showed stochastic deltas that did not survive re-generation.
 | sp-004 (Beksinski) | +6 | -3 | No (reversed) | -- |
 | sp-005 (angler fish) | +4 | +2 | No | -- |
 
+## Phase 4 -- Attribution Round 2 (Lexica 150 prompts)
+
+Expanded the pool from 50 to 150 Lexica prompts (1-50 + 101-200; prompts 51-100
+excluded because minority images for that range were not generated under the
+documented experiment workflow).
+
+14 special prompts were identified (vs 5 in round 1). 9 were new from the
+expanded 101-200 range.
+
+### Reproducibility
+
+Only **4 of 14** (29%) reproduced their specialness on re-generation:
+
+| Prompt | Src Line | Original Delta | Re-gen Delta | Reproduced? |
+|--------|----------|---------------|--------------|-------------|
+| sp-001 (strongmen cuddling) | 200 | +10 | -3 | No |
+| sp-002 (hitler jelly) | 163 | +9 | 0 | No |
+| sp-003 (Obama trail cam) | 11 | +8 | +9 | Yes |
+| sp-004 (Aphrodite + Trump) | 46 | +7 | +6 | Yes |
+| sp-005 (woman statue) | 36 | +7 | +5 | Yes |
+| sp-006 (hillary clinton) | 120 | +7 | +9 | Yes |
+| sp-007 (Beksinski) | 26 | +6 | +1 | No |
+| sp-008 (vanessa beecroft) | 155 | +6 | +3 | No |
+| sp-009 (facehugger bikini) | 112 | +5 | 0 | No |
+| sp-010 (trump wrestling) | 108 | +5 | -5 | No |
+| sp-011 (angler fish) | 22 | +4 | 0 | No |
+| sp-012 (trump knight) | 173 | +4 | -3 | No |
+| sp-013 (mike pence) | 137 | +4 | 0 | No |
+| sp-014 (goblin horde) | 115 | +4 | N/A | No |
+
+### Attribution Results (Round 2)
+
+| Element Type | Times Key | Times Not Key | Key Ratio |
+|--------------|-----------|---------------|-----------|
+| medium       | 2         | 0             | 100%      |
+| person       | 2         | 0             | 100%      |
+| mood         | 1         | 0             | 100%      |
+| artist       | 1         | 1             | 50%       |
+| suggestive   | 0         | 1             | 0%        |
+
+### Comparison with Round 1
+
+| Element | Round 1 Key Ratio | Round 2 Key Ratio |
+|---------|-------------------|-------------------|
+| person  | 100%              | 100%              |
+| medium  | 50%               | 100%              |
+| artist  | 100%              | 50%               |
+| mood    | 67%               | 100%              |
+| suggestive | 0%             | 0%                |
+
+**Key findings from round 2:**
+- **person** remains the most consistently key element across both rounds (100%)
+- All 4 reproduced prompts contain named public/political figures or mythological names
+- Of the 9 new prompts from the expanded range, only 1 (sp-006, hillary clinton) reproduced
+- **Suggestive language** is never a key driver (0% in both rounds)
+- High non-reproducibility (71%) confirms the stochastic nature of the effect
+
 ## Hypothesised Mechanism
 
 The model's text embedding space has regions near political/public figure tokens

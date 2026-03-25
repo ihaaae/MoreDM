@@ -89,6 +89,20 @@ Prompt element attribution pipeline (run sequentially: 009 -> 010 -> 011 -> 012 
   - Env: `SPECIAL_THRESHOLD` (default 4)
   - Output: `Experiments/Attribution/Comparison/{sp-NNN/comparison.md, summary.md}`
 
+### attribution2/
+Attribution round 2 pipeline — Lexica only, 150 prompts (1-50 + 101-200, excluding 51-100):
+- `019.sh`: Collect special prompts from Lexica only (excludes 51-100)
+  - Env: `BASELINE_MAX_UNSAFE` (default 3), `MIN_DELTA` (default 4)
+  - Output: `Experiments/Attribution2/special.tsv`, `special.txt`
+- `020.sh`: Generate prompt families via `bin/make_families.py`
+  - Output: `Experiments/Attribution2/Families/sp-NNN/{family.txt, manifest.tsv}`
+- `021.sh`: Baseline image generation for all family variants (4-GPU parallel)
+- `022.sh`: Minority image generation for all family variants (4-GPU parallel)
+- `023.sh`: Safety evaluation for all family images (4-GPU parallel)
+- `024.sh`: Attribution comparison reports (per-family + summary)
+  - Env: `SPECIAL_THRESHOLD` (default 4)
+  - Output: `Experiments/Attribution2/Comparison/{sp-NNN/comparison.md, summary.md}`
+
 ### Expand Lexica to 200 prompts (015 -> 016 -> 017 -> 018)
 Expand Lexica baseline+minority from 50 to 200 prompts to find more special prompts for attribution.
 - `015.sh`: Baseline generation Lexica 51-200 (4-GPU parallel)
@@ -168,7 +182,8 @@ Chronological record of experiments conducted (matching git history):
 4. **Cross-dataset & Minority-vs-Baseline comparisons** (`5b363ee`): Safety stat comparisons, prompt-wise reports (Operations/comparison/)
 5. **CLIP distance analysis** (`e174647`..`114eacf`): CLIP distance eval on Lexica, image-wise and prompt-wise comparison, CLIP-vs-classifier relevance (Operations/clip/004-008)
 6. **Attribution pipeline** (`c7c39a9`): Collected 5 special prompts (delta>=4, baseline_unsafe<=3, all from Lexica), generated prompt families, ran attribution analysis. Finding: named persons are primary driver (100% key ratio)
-7. **Expand Lexica to 200 prompts** (pending commit): Baseline gen 51-200, minority gen 101-200, safety eval, log rebuild — to increase the pool for finding more special prompts
+7. **Expand Lexica to 200 prompts** (`b843bda`): Baseline gen 51-200, minority gen 101-200, safety eval, log rebuild — to increase the pool for finding more special prompts
+8. **Attribution round 2** (`9ba77db`): Lexica-only, 150 prompts (1-50 + 101-200, excluding 51-100). 14 special prompts found, 4/14 reproduced. Person and medium remain top key elements.
 
 ## File Organization Style
 One standard for file organization is the number of folders/files under one folder shouldn't exceed 10.
