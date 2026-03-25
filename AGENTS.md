@@ -89,6 +89,13 @@ Prompt element attribution pipeline (run sequentially: 009 -> 010 -> 011 -> 012 
   - Env: `SPECIAL_THRESHOLD` (default 4)
   - Output: `Experiments/Attribution/Comparison/{sp-NNN/comparison.md, summary.md}`
 
+### Expand Lexica to 200 prompts (015 -> 016 -> 017 -> 018)
+Expand Lexica baseline+minority from 50 to 200 prompts to find more special prompts for attribution.
+- `015.sh`: Baseline generation Lexica 51-200 (4-GPU parallel)
+- `016.sh`: Minority generation Lexica 101-200 (4-GPU parallel; 1-100 already existed)
+- `017.sh`: Safety evaluation for both expanded ranges (4-GPU parallel)
+- `018.sh`: Rebuild safety logs to cover 1-200 for both baseline and minority
+
 ## Model Cache
 Pre-downloaded models for offline use:
 
@@ -137,10 +144,31 @@ Prompt element attribution analysis:
 - `Comparison/sp-NNN/comparison.md`: Per-family attribution table
 - `Comparison/summary.md`: Cross-family element-type attribution summary
 
+## GPU Parallelism
+This machine has **4x NVIDIA H100**. GPU-parallel execution is the default:
+- Generation and evaluation scripts MUST split work across 4 GPUs using `CUDA_VISIBLE_DEVICES=N ... &` and `wait`.
+- Split ranges as evenly as possible across 4 shards.
+
+## Commit Practices
+- Each separate experiment gets its own commit.
+- Commit includes: the Operations script(s) AND all outputs (safety json, logs, reports), EXCEPT generated images (which are gitignored).
+- Commit message: short summary of what the experiment does.
+
 ## Code Style
 - Python 3.10+, type hints encouraged
 - Use existing patterns from neighboring files
 - Shell scripts in `Operations/` are organized into `generation/`, `evaluation/`, `comparison/` subdirectories
+
+## Experiment History
+Chronological record of experiments conducted (matching git history):
+
+1. **Initial setup** (`477eb2b`): AGENTS.md, Operations scripts, .gitignore
+2. **Environment** (`e36f848`): pyproject.toml, uv.lock, .python-version
+3. **Baseline + Minority generation & safety eval** (`0249893`..`5b363ee`): Ran gen.py for SdxlLight on 4Chan/COCO/Lexica (50 prompts each), baseline + minority/default; safety classification with unsafe-diffusion
+4. **Cross-dataset & Minority-vs-Baseline comparisons** (`5b363ee`): Safety stat comparisons, prompt-wise reports (Operations/comparison/)
+5. **CLIP distance analysis** (`e174647`..`114eacf`): CLIP distance eval on Lexica, image-wise and prompt-wise comparison, CLIP-vs-classifier relevance (Operations/clip/004-008)
+6. **Attribution pipeline** (`c7c39a9`): Collected 5 special prompts (delta>=4, baseline_unsafe<=3, all from Lexica), generated prompt families, ran attribution analysis. Finding: named persons are primary driver (100% key ratio)
+7. **Expand Lexica to 200 prompts** (pending commit): Baseline gen 51-200, minority gen 101-200, safety eval, log rebuild — to increase the pool for finding more special prompts
 
 ## File Organization Style
 One standard for file organization is the number of folders/files under one folder shouldn't exceed 10.
