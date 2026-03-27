@@ -36,12 +36,15 @@ PERSONS = {
     "jesse pinkman": "sherlock holmes",
     "pepe the frog": "a cartoon bear",
     "gus fring": "professor moriarty",
+    "mike pence": "thomas edison",
+    "stormy daniels": "florence nightingale",
     "obama": "einstein",
     "trump": "shakespeare",
     "clinton": "lincoln",
     "biden": "newton",
     "putin": "galileo",
     "stalin": "socrates",
+    "hitler": "napoleon",
     "aphrodite": "athena",
     "pepe": "teddy bear",
 }
@@ -84,6 +87,10 @@ ARTISTS = {
     "artgrem": "norman rockwell",
     "rene magritte": "claude monet",
     "anna rubincam": "auguste rodin",
+    "vanessa beecroft": "mary cassatt",
+    "jenny frison": "mary cassatt",
+    "sana takeda": "beatrix potter",
+    "wes anderson": "steven spielberg",
     "mucha": "pierre bonnard",
 }
 
@@ -120,6 +127,9 @@ MOODS = {
     "ghost": "fairy",
     "ghosts": "fairies",
     "dark": "bright",
+    "facehugger": "butterfly",
+    "knife": "wand",
+    "goblin": "fairy",
 }
 
 SUGGESTIVE = {
@@ -131,6 +141,11 @@ SUGGESTIVE = {
     "provocative": "modest",
     "sensual": "formal",
     "erotic": "artistic",
+    "cuddling and kissing": "standing and talking",
+    "cuddling": "standing",
+    "kissing": "waving",
+    "shirtless": "suited",
+    "bikini": "sundress",
 }
 
 MEDIUMS = {
@@ -144,6 +159,8 @@ MEDIUMS = {
     "3d render": "watercolor",
     "poster": "sketch",
     "comic": "photograph",
+    "pencil drawing": "watercolor painting",
+    "photograph": "oil painting",
 }
 
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Minority image generation for attribution families (round 3)
-# Uses 4-GPU parallelism: families are distributed across GPUs.
+# Batches 4 families at a time (one per GPU) to avoid OOM.
 
 base="/home/lxc/MoreDM/Experiments/Attribution3"
 families_dir="$base/Families"
@@ -24,9 +24,10 @@ if [ "$count" -eq 0 ]; then
     exit 1
 fi
 
-echo "Generating minority for $count families across 4 GPUs..."
+echo "Generating minority for $count families across 4 GPUs (batches of 4)..."
 
 gpu=0
+batch=0
 for family_dir in $all_families; do
     sp_id=$(basename "$family_dir")
     family_file="$family_dir/family.txt"
@@ -50,6 +51,13 @@ for family_dir in $all_families; do
         --end "$num_lines" &
 
     gpu=$(( (gpu + 1) % 4 ))
+    batch=$((batch + 1))
+
+    # Wait after every 4 jobs
+    if [ $((batch % 4)) -eq 0 ]; then
+        wait
+        echo "--- batch done ---"
+    fi
 done
 
 wait

@@ -75,21 +75,28 @@ CLIP distance analysis on Lexica (run sequentially: 01 -> 02 -> 03 -> 04 -> 05):
 - `04-compare-promptwise.sh`: CLIP prompt-wise comparison: Minority vs Baseline on Lexica
 - `05-clip-vs-classifier-relevance.sh`: CLIP-vs-classifier relevance: Minority vs Baseline on Lexica
 
-### unsafe-attribution-all-1-50/
-Attribution round 1 — all 3 datasets × 50 prompts (superseded by attrib-lexica-1-200):
+### 05-unsafe-attribution-all-1-50/
+Attribution round 1 — all 3 datasets × 50 prompts (superseded by 08-attrib-lexica-1-200):
 - `01-select-special-prompts.sh` -> `06-compare-attribution.sh`: Collect specials, build families, generate, evaluate, compare
   - Found 5 special prompts (all from Lexica). Person names = primary driver.
 
-### attrib-lexica-round2/
-Attribution round 2 — Lexica only, prompts 1-50 + 101-200 (superseded by attrib-lexica-1-200):
-- `collect-special-prompts.sh`: Collect special prompts from Lexica (150 usable)
-- `generate-families.sh`: Generate prompt families from specials
-- `generate-baseline.sh`: Baseline image generation (4-GPU parallel)
-- `generate-minority.sh`: Minority image generation (4-GPU parallel)
-- `evaluate-safety.sh`: Safety evaluation (4-GPU parallel)
-- `compare-attribution.sh`: Per-family + summary attribution reports
+### 06-lexica-baseline-51-200-vs-low-density-101-200/
+Lexica baseline vs low-density experiment for expanded ranges and safety comparison prep.
+- `01-generate-baseline.sh`: Baseline generation Lexica 51-200 (4-GPU parallel)
+- `02-generate-low-density.sh`: Low-density generation Lexica 101-200 (4-GPU parallel; 1-100 already existed)
+- `03-evaluate-safety.sh`: Safety evaluation for both ranges (4-GPU parallel)
+- `04-prepare-comparison-logs.sh`: Rebuild safety logs to cover 1-200 for baseline and low-density
 
-### attrib-lexica-1-200/
+### 07-attrib-lexica/
+Attribution round 2 — Lexica only, prompts 1-50 + 101-200 (superseded by 08-attrib-lexica-1-200):
+- `01-collect-special-prompts.sh`: Collect special prompts from Lexica (150 usable)
+- `02-generate-families.sh`: Generate prompt families from specials
+- `03-generate-baseline.sh`: Baseline image generation (4-GPU parallel)
+- `04-generate-minority.sh`: Minority image generation (4-GPU parallel)
+- `05-evaluate-safety.sh`: Safety evaluation (4-GPU parallel)
+- `06-compare-attribution.sh`: Per-family + summary attribution reports
+
+### 08-attrib-lexica-1-200/
 Attribution round 3 — Lexica only, full 200 prompts (current):
 - `01-regenerate-minority-51-100.sh`: Regenerate stale minority images for Lexica 51-100
 - `02-evaluate-safety-minority-51-100.sh`: Safety eval for regenerated minority 51-100
@@ -105,13 +112,6 @@ Attribution round 3 — Lexica only, full 200 prompts (current):
 - `09-compare-attribution.sh`: Attribution comparison reports (per-family + summary)
   - Env: `SPECIAL_THRESHOLD` (default 4)
   - Output: `Experiments/Attribution/Comparison/{sp-NNN/comparison.md, summary.md}`
-
-### lexica-baseline-51-200-vs-low-density-101-200/
-Lexica baseline vs low-density experiment for expanded ranges and safety comparison prep.
-- `01-generate-baseline.sh`: Baseline generation Lexica 51-200 (4-GPU parallel)
-- `02-generate-low-density.sh`: Low-density generation Lexica 101-200 (4-GPU parallel; 1-100 already existed)
-- `03-evaluate-safety.sh`: Safety evaluation for both ranges (4-GPU parallel)
-- `04-prepare-comparison-logs.sh`: Rebuild safety logs to cover 1-200 for baseline and low-density
 
 ## Model Cache
 Pre-downloaded models for offline use:
@@ -174,7 +174,7 @@ This machine has **4x NVIDIA H100**. GPU-parallel execution is the default:
 ## Code Style
 - Python 3.10+, type hints encouraged
 - Use existing patterns from neighboring files
-- Shell scripts in `Operations/` are organized into `generation/`, `evaluation/`, `comparison/` subdirectories
+- Shell scripts in `Operations/` are organized into numbered subdirectories (`04-clip-lexica-minority-vs-baseline/`, `05-unsafe-attribution-all-1-50/`, etc.) plus `generation/`, `evaluation/`, `comparison/` for early experiments
 
 ## Experiment History
 Chronological record of experiments conducted (matching git history):

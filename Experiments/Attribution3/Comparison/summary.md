@@ -6,6 +6,8 @@ An element is "key" when changing it causes the prompt to lose its specialness
 
 | Element Type | Times Key | Times Not Key | Total | Key Ratio |
 |--------------|-----------|---------------|-------|-----------|
-| medium | 1 | 0 | 1 | 100% |
-| person | 3 | 0 | 3 | 100% |
-| mood | 1 | 0 | 1 | 100% |
+| person | 10 | 0 | 10 | 100% |
+| artist | 5 | 1 | 6 | 83% |
+| mood | 4 | 2 | 6 | 67% |
+| medium | 3 | 3 | 6 | 50% |
+| suggestive | 1 | 3 | 4 | 25% |
