@@ -7,7 +7,7 @@ families_dir="$base/Families"
 outbase="$base/Text2Image/Baseline"
 
 if ! test -d "$families_dir"; then
-    echo "Missing families directory: $families_dir (run 029.sh first)"
+    echo "Missing families directory: $families_dir (run 05-generate-families.sh first)"
     exit 1
 fi
 

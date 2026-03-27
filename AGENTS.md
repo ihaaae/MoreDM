@@ -67,44 +67,51 @@ Prompt-wise Minority vs Baseline comparisons:
 - Rule: `delta = minority_unsafe - baseline_unsafe`; default `almost_same` tolerance is `|delta| <= 1`
 - Prompt IDs may be 2-digit or 3-digit strings across datasets; compare numerically by prompt id
 
-### clip/
-CLIP distance analysis on Lexica (run sequentially: 004 -> 005 -> 006 -> 007 -> 008):
-- `004.sh`: CLIP distance eval for baseline SdxlLight-Lexica
-- `005.sh`: CLIP distance eval for minority SdxlLight-Lexica
-- `006.sh`: CLIP image-wise comparison: Minority vs Baseline on Lexica
-- `007.sh`: CLIP prompt-wise comparison: Minority vs Baseline on Lexica
-- `008.sh`: CLIP-vs-classifier relevance: Minority vs Baseline on Lexica
+### 04-clip-lexica-minority-vs-baseline/
+CLIP distance analysis on Lexica (run sequentially: 01 -> 02 -> 03 -> 04 -> 05):
+- `01-clip-distance-baseline.sh`: CLIP distance eval for baseline SdxlLight-Lexica
+- `02-clip-distance-minority.sh`: CLIP distance eval for minority SdxlLight-Lexica
+- `03-compare-imagewise.sh`: CLIP image-wise comparison: Minority vs Baseline on Lexica
+- `04-compare-promptwise.sh`: CLIP prompt-wise comparison: Minority vs Baseline on Lexica
+- `05-clip-vs-classifier-relevance.sh`: CLIP-vs-classifier relevance: Minority vs Baseline on Lexica
 
-### attrib-all-1-50/
+### unsafe-attribution-all-1-50/
 Attribution round 1 — all 3 datasets × 50 prompts (superseded by attrib-lexica-1-200):
-- `009.sh`–`014.sh`: Collect specials, build families, generate, evaluate, compare
+- `01-select-special-prompts.sh` -> `06-compare-attribution.sh`: Collect specials, build families, generate, evaluate, compare
   - Found 5 special prompts (all from Lexica). Person names = primary driver.
 
-### attrib-lexica-101-200/
+### attrib-lexica-round2/
 Attribution round 2 — Lexica only, prompts 1-50 + 101-200 (superseded by attrib-lexica-1-200):
-- `019.sh`–`024.sh`: Same pipeline, Lexica only
+- `collect-special-prompts.sh`: Collect special prompts from Lexica (150 usable)
+- `generate-families.sh`: Generate prompt families from specials
+- `generate-baseline.sh`: Baseline image generation (4-GPU parallel)
+- `generate-minority.sh`: Minority image generation (4-GPU parallel)
+- `evaluate-safety.sh`: Safety evaluation (4-GPU parallel)
+- `compare-attribution.sh`: Per-family + summary attribution reports
 
 ### attrib-lexica-1-200/
 Attribution round 3 — Lexica only, full 200 prompts (current):
-- `025.sh`–`027.sh`: Regenerate minority 51-100, safety eval, rebuild logs
-- `028.sh`: Collect special prompts (all 200 Lexica)
+- `01-regenerate-minority-51-100.sh`: Regenerate stale minority images for Lexica 51-100
+- `02-evaluate-safety-minority-51-100.sh`: Safety eval for regenerated minority 51-100
+- `03-rebuild-safety-logs.sh`: Rebuild safety logs for full 1-200 range
+- `04-collect-special-prompts.sh`: Collect special prompts (all 200 Lexica)
   - Env: `BASELINE_MAX_UNSAFE` (default 3), `MIN_DELTA` (default 4)
   - Output: `Experiments/Attribution/special.tsv`, `special.txt`
-- `029.sh`: Generate prompt families via `bin/make_families.py`
+- `05-generate-families.sh`: Generate prompt families via `bin/make_families.py`
   - Output: `Experiments/Attribution/Families/sp-NNN/{family.txt, manifest.tsv}`
-- `030.sh`: Baseline image generation (4-GPU parallel)
-- `031.sh`: Minority image generation (4-GPU parallel)
-- `032.sh`: Safety evaluation (4-GPU parallel)
-- `033.sh`: Attribution comparison reports (per-family + summary)
+- `06-generate-baseline.sh`: Baseline image generation (4-GPU parallel)
+- `07-generate-minority.sh`: Minority image generation (4-GPU parallel)
+- `08-evaluate-safety.sh`: Safety evaluation (4-GPU parallel)
+- `09-compare-attribution.sh`: Attribution comparison reports (per-family + summary)
   - Env: `SPECIAL_THRESHOLD` (default 4)
   - Output: `Experiments/Attribution/Comparison/{sp-NNN/comparison.md, summary.md}`
 
-### expand-lexica/
-Expand Lexica baseline+minority from 50 to 200 prompts to find more special prompts for attribution.
-- `015.sh`: Baseline generation Lexica 51-200 (4-GPU parallel)
-- `016.sh`: Minority generation Lexica 101-200 (4-GPU parallel; 1-100 already existed)
-- `017.sh`: Safety evaluation for both expanded ranges (4-GPU parallel)
-- `018.sh`: Rebuild safety logs to cover 1-200 for both baseline and minority
+### lexica-baseline-51-200-vs-low-density-101-200/
+Lexica baseline vs low-density experiment for expanded ranges and safety comparison prep.
+- `01-generate-baseline.sh`: Baseline generation Lexica 51-200 (4-GPU parallel)
+- `02-generate-low-density.sh`: Low-density generation Lexica 101-200 (4-GPU parallel; 1-100 already existed)
+- `03-evaluate-safety.sh`: Safety evaluation for both ranges (4-GPU parallel)
+- `04-prepare-comparison-logs.sh`: Rebuild safety logs to cover 1-200 for baseline and low-density
 
 ## Model Cache
 Pre-downloaded models for offline use:

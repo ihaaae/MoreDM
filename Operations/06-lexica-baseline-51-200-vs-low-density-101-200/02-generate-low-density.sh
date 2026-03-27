@@ -1,5 +1,5 @@
 #!/bin/sh
-# Minority generation (default config): SdxlLight model with Lexica prompts 101-200
+# Low-density generation (default config): SdxlLight model with Lexica prompts 101-200
 # Prompts 1-100 already generated. Parallel across 4 GPUs.
 
 outdir="/home/lxc/MoreDM/Experiments/Text2Image/Minority/SdxlLight-Lexica/default"
@@ -25,4 +25,4 @@ CUDA_VISIBLE_DEVICES=3 uv run bin/gen.py \
     --default --begin 176 --end 200 &
 
 wait
-echo "Done: minority Lexica 101-200"
+echo "Done: low-density Lexica 101-200"

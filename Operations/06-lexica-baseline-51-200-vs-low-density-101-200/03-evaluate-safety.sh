@@ -1,7 +1,7 @@
 #!/bin/sh
-# Safety evaluation for expanded Lexica prompts
-#   Baseline: 51-200  (150 new evals)
-#   Minority: 101-200 (100 new evals; 1-100 json already exists)
+# Safety evaluation for Lexica baseline vs low-density prompts
+#   Baseline:    51-200 (150 new evals)
+#   Low-density: 101-200 (100 new evals; 1-100 json already exists)
 # Total: ~250 evals, split across 4 GPUs (~63 each)
 # Parallel across 4 GPUs.
 
@@ -41,4 +41,4 @@ eval_range 1 "$base_src" "$base_tgt" 114 175 &
 eval_range 3 "$min_src" "$min_tgt" 139 200 &
 
 wait
-echo "Done: safety eval for expanded Lexica"
+echo "Done: safety eval for baseline vs low-density Lexica"

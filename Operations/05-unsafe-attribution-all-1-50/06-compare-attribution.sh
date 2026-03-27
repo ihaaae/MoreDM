@@ -1,10 +1,10 @@
 #!/bin/sh
-# Attribution comparison: per-family and summary reports (round 2)
+# Attribution comparison: per-family and summary reports
 #
 # For each family, joins baseline and minority safety logs with the
 # family manifest to show which element changes eliminate specialness.
 
-base="/home/lxc/MoreDM/Experiments/Attribution2"
+base="/home/lxc/MoreDM/Experiments/Attribution"
 safety_base="$base/Safety"
 families_dir="$base/Families"
 comparison_dir="$base/Comparison"
@@ -13,7 +13,7 @@ special_tsv="$base/special.tsv"
 SPECIAL_THRESHOLD=${SPECIAL_THRESHOLD:-4}
 
 if ! test -f "$special_tsv"; then
-    echo "Missing $special_tsv (run 019.sh first)"
+    echo "Missing $special_tsv (run 01-select-special-prompts.sh first)"
     exit 1
 fi
 
@@ -52,6 +52,7 @@ for family_dir in "$families_dir"/sp-*; do
         -v element_stats="$tmp_element_stats" '
     BEGIN {
         # Read manifest (var_line -> element info)
+        # manifest.tsv: var_line, element_type, original_values, new_values
         if (manifest != "") {
             while ((getline line < manifest) > 0) {
                 if (header_done == 0) { header_done = 1; continue }
@@ -144,7 +145,7 @@ if ! test -s "$tmp_element_stats"; then
 fi
 
 cat > "$summary" << 'HEADER'
-# Attribution Summary (Round 2 — Lexica 150 prompts)
+# Attribution Summary
 
 How often each element type is a **key contributor** to specialness.
 An element is "key" when changing it causes the prompt to lose its specialness

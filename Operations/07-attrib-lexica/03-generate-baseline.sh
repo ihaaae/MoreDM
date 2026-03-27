@@ -1,13 +1,13 @@
 #!/bin/sh
-# Minority image generation for attribution families (round 2)
+# Baseline image generation for attribution families (round 2)
 # Uses 4-GPU parallelism: families are distributed across GPUs.
 
 base="/home/lxc/MoreDM/Experiments/Attribution2"
 families_dir="$base/Families"
-outbase="$base/Text2Image/Minority"
+outbase="$base/Text2Image/Baseline"
 
 if ! test -d "$families_dir"; then
-    echo "Missing families directory: $families_dir (run 020.sh first)"
+    echo "Missing families directory: $families_dir (run generate-families.sh first)"
     exit 1
 fi
 
@@ -25,7 +25,7 @@ if [ "$count" -eq 0 ]; then
     exit 1
 fi
 
-echo "Generating minority for $count families across 4 GPUs..."
+echo "Generating baseline for $count families across 4 GPUs..."
 
 gpu=0
 for family_dir in $all_families; do
@@ -44,8 +44,7 @@ for family_dir in $all_families; do
     echo "[$sp_id] GPU $gpu: $num_lines prompt(s) -> $outdir"
     CUDA_VISIBLE_DEVICES=$gpu uv run bin/gen.py \
         --outdir "$outdir" \
-        --model min-sdxl-light \
-        --default \
+        --model sdxl-light \
         --prompts "$family_file" \
         --begin 1 \
         --end "$num_lines" &
@@ -54,4 +53,4 @@ for family_dir in $all_families; do
 done
 
 wait
-echo "Minority generation complete."
+echo "Baseline generation complete."

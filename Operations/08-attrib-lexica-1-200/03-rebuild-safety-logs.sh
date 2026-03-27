@@ -1,7 +1,7 @@
 #!/bin/sh
 # Rebuild safety logs for Lexica 1-200 (baseline + minority).
 # Now includes the freshly evaluated 51-100 minority data.
-# Run after 026.sh.
+# Run after 02-evaluate-safety-minority-51-100.sh.
 
 base_tgt="/home/lxc/MoreDM/Experiments/Safety/Dataset/1-SdxlLight-Lexica"
 min_tgt="/home/lxc/MoreDM/Experiments/Safety/Minority/SdxlLight-Lexica/default"

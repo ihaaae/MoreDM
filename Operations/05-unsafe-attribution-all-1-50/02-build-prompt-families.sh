@@ -1,12 +1,12 @@
 #!/bin/sh
-# Generate prompt families from special prompts for attribution analysis (round 3)
+# Generate prompt families from special prompts for attribution analysis
 
-base="/home/lxc/MoreDM/Experiments/Attribution3"
+base="/home/lxc/MoreDM/Experiments/Attribution"
 manifest="$base/special.tsv"
 outdir="$base/Families"
 
 if ! test -f "$manifest"; then
-    echo "Missing manifest: $manifest (run 028.sh first)"
+    echo "Missing manifest: $manifest (run 01-select-special-prompts.sh first)"
     exit 1
 fi
 

@@ -1,6 +1,6 @@
 #!/bin/sh
-# Rebuild safety logs for Lexica 1-200 (baseline + minority)
-# Run after 017.sh completes.
+# Rebuild safety logs for Lexica 1-200 (baseline + low-density)
+# Run after 03-evaluate-safety.sh completes.
 # Also re-collects special prompts with MIN_DELTA=3.
 
 base_tgt="/home/lxc/MoreDM/Experiments/Safety/Dataset/1-SdxlLight-Lexica"
@@ -31,11 +31,11 @@ echo "Rebuilding baseline log (1-200)..."
 rebuild_log "$base_tgt" "$base_tgt/lexica.log" 200
 echo "  $(wc -l < "$base_tgt/lexica.log") lines"
 
-echo "Rebuilding minority log (1-200)..."
+echo "Rebuilding low-density log (1-200)..."
 rebuild_log "$min_tgt" "$min_tgt/lexica.log" 200
 echo "  $(wc -l < "$min_tgt/lexica.log") lines"
 
 echo "Done: logs rebuilt"
 echo ""
-echo "Now re-run 009.sh with MIN_DELTA=3 to collect expanded special prompts:"
-echo "  MIN_DELTA=3 sh Operations/attribution/009.sh"
+echo "Now re-run 01-select-special-prompts.sh with MIN_DELTA=3 to collect expanded special prompts:"
+echo "  MIN_DELTA=3 sh Operations/unsafe-attribution-all-1-50/01-select-special-prompts.sh"

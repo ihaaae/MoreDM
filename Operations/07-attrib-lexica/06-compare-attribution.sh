@@ -1,10 +1,10 @@
 #!/bin/sh
-# Attribution comparison: per-family and summary reports (round 3)
+# Attribution comparison: per-family and summary reports (round 2)
 #
 # For each family, joins baseline and minority safety logs with the
 # family manifest to show which element changes eliminate specialness.
 
-base="/home/lxc/MoreDM/Experiments/Attribution3"
+base="/home/lxc/MoreDM/Experiments/Attribution2"
 safety_base="$base/Safety"
 families_dir="$base/Families"
 comparison_dir="$base/Comparison"
@@ -13,7 +13,7 @@ special_tsv="$base/special.tsv"
 SPECIAL_THRESHOLD=${SPECIAL_THRESHOLD:-4}
 
 if ! test -f "$special_tsv"; then
-    echo "Missing $special_tsv (run 028.sh first)"
+    echo "Missing $special_tsv (run collect-special-prompts.sh first)"
     exit 1
 fi
 
@@ -39,15 +39,19 @@ for family_dir in "$families_dir"/sp-*; do
         continue
     fi
 
+    # Look up original prompt text from special.tsv
     original_prompt=$(awk -F '\t' -v id="$sp_id" 'NR>1 && $1==id {print $7}' "$special_tsv")
 
     out_dir="$comparison_dir/$sp_id"
     mkdir -p "$out_dir"
     out="$out_dir/comparison.md"
 
+    # Join baseline and minority safety logs, then merge with manifest
+    # v-id 001 = original, 002+ = variants
     awk -v threshold="$SPECIAL_THRESHOLD" -v manifest="$manifest" -v family="$family_file" \
         -v element_stats="$tmp_element_stats" '
     BEGIN {
+        # Read manifest (var_line -> element info)
         if (manifest != "") {
             while ((getline line < manifest) > 0) {
                 if (header_done == 0) { header_done = 1; continue }
@@ -60,6 +64,7 @@ for family_dir in "$families_dir"/sp-*; do
             }
             close(manifest)
         }
+        # Read family prompts (line number -> prompt text)
         line_num = 0
         if (family != "") {
             while ((getline line < family) > 0) {
@@ -101,6 +106,7 @@ for family_dir in "$families_dir"/sp-*; do
             printf("| %s | %s | %s -> %s | %d | %d | %+d | %s |\n",
                    label, et, ov, nv, b_unsafe[vid], m_unsafe[vid], delta[vid], special[vid])
 
+            # Track element-level stats for summary (skip original)
             if (vid != "001" && et != "-") {
                 if (special[vid] == "YES")
                     printf("%s\tnot_key\n", et) >> element_stats
@@ -138,7 +144,7 @@ if ! test -s "$tmp_element_stats"; then
 fi
 
 cat > "$summary" << 'HEADER'
-# Attribution Summary (Round 3 — Lexica 200 prompts, full range)
+# Attribution Summary (Round 2 — Lexica 150 prompts)
 
 How often each element type is a **key contributor** to specialness.
 An element is "key" when changing it causes the prompt to lose its specialness
@@ -158,6 +164,7 @@ END {
     printf("| Element Type | Times Key | Times Not Key | Total | Key Ratio |\n")
     printf("|--------------|-----------|---------------|-------|-----------|\n")
 
+    # Sort by key ratio descending
     n = 0
     for (t in total) {
         n++
@@ -165,6 +172,7 @@ END {
         k = (t in key) ? key[t] : 0
         ratios[t] = (total[t] > 0) ? k / total[t] : 0
     }
+    # Bubble sort by ratio
     for (i = 1; i <= n; i++)
         for (j = i + 1; j <= n; j++)
             if (ratios[types[j]] > ratios[types[i]]) {

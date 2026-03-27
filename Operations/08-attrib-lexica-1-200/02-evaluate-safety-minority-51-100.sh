@@ -1,6 +1,6 @@
 #!/bin/sh
 # Safety evaluation for the newly generated minority Lexica 51-100 images.
-# Run after 025.sh.
+# Run after 01-regenerate-minority-51-100.sh.
 
 min_src="/home/lxc/MoreDM/Experiments/Text2Image/Minority/SdxlLight-Lexica/default"
 min_tgt="/home/lxc/MoreDM/Experiments/Safety/Minority/SdxlLight-Lexica/default"
