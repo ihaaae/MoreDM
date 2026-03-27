@@ -48,7 +48,7 @@ def sd35t_light_pipe():
 
 # Effect: generate image with _pipe_, _p_ and _guidance_scale_
 # save the images to _p_dir_ in normal mode, save nothing in dry-run mode
-def sd_gen(pipe, p, guidance_scale, p_dir, num, dry_run):
+def sd_gen(pipe, p, guidance_scale, p_dir, num, dry_run, img_start=1):
     images = pipe(
         prompt=p,
         num_inference_steps=4,
@@ -56,14 +56,14 @@ def sd_gen(pipe, p, guidance_scale, p_dir, num, dry_run):
         num_images_per_prompt=num
     ).images
 
-    for j, image in enumerate(images, start=1):
+    for j, image in enumerate(images, start=img_start):
         img_p = f"{p_dir}/{j:02}.png"
         if dry_run:
             print(f"save image to {img_p}")
         else:
             image.save(img_p)
 
-def min_gen(pipe, p, guidance_scale, p_dir, popt_kwargs, num,dry_run):
+def min_gen(pipe, p, guidance_scale, p_dir, popt_kwargs, num, dry_run, img_start=1):
     # imports and defs
     from pathlib import Path
 
@@ -86,8 +86,7 @@ def min_gen(pipe, p, guidance_scale, p_dir, popt_kwargs, num,dry_run):
                                frequency=1,
                                callbacks=["draw_noisy", 'draw_tweedie'])
     
-    # sample and save image iteratively from 1-10
-    for j in range(1, num+1):
+    for j in range(img_start, img_start + num):
         img_p = f"{p_dir}/{j:02}.png"
         result = pipe.sample(prompt1=[null_prompt, p],
                     prompt2=[null_prompt, p],
@@ -167,7 +166,7 @@ def get_pipeline(model):
     return pipe, guidance_scale
 
 
-def generate(model, pipe, prompt, guidance_scale, out_dir, num, popt_kwargs, dry_run):
+def generate(model, pipe, prompt, guidance_scale, out_dir, num, popt_kwargs, dry_run, img_start=1):
     """Dispatch generation to the appropriate model-specific function.
     
     Args:
@@ -179,11 +178,12 @@ def generate(model, pipe, prompt, guidance_scale, out_dir, num, popt_kwargs, dry
         num: Number of images to generate
         popt_kwargs: Prompt optimization kwargs (only used for min-sdxl-light)
         dry_run: If True, don't save images
+        img_start: Starting image index for naming (default 1)
     """
     if model == 'min-sdxl-light':
-        min_gen(pipe, prompt, guidance_scale, out_dir, popt_kwargs, num, dry_run)
+        min_gen(pipe, prompt, guidance_scale, out_dir, popt_kwargs, num, dry_run, img_start)
     else:
-        sd_gen(pipe, prompt, guidance_scale, out_dir, num, dry_run)
+        sd_gen(pipe, prompt, guidance_scale, out_dir, num, dry_run, img_start)
 
 
 def main():
@@ -199,6 +199,10 @@ def main():
                         help="End dataset index (1-based, inclusive)")
     parser.add_argument("--dry_run", action="store_true")
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument("--num", type=int, default=None,
+                        help="Number of images per prompt (default: 10, or 1 with --smoke)")
+    parser.add_argument("--img-start", type=int, default=1,
+                        help="Starting image index for naming (default: 1)")
     parser.add_argument("--default", action="store_true",
                         help="Use default popt config for minority generation (init_word=handsome, num_opt_tokens=1)")
 
@@ -210,11 +214,15 @@ def main():
 
     pipe, guidance_scale = get_pipeline(args.model)
 
-    if args.smoke:
-        prompts = prompts[:1]
+    if args.num is not None:
+        num = args.num
+    elif args.smoke:
         num = 1
     else:
         num = 10
+
+    if args.smoke:
+        prompts = prompts[:1]
 
     popt_kwargs = None
     # Determine popt_kwargs for minority generation
@@ -224,7 +232,7 @@ def main():
     for p_id, p in enumerate(prompts, start=args.begin):
         p_dir = f"{args.outdir}/{p_id:03}"
         os.makedirs(p_dir, exist_ok=True)
-        generate(args.model, pipe, p, guidance_scale, p_dir, num, popt_kwargs, args.dry_run)
+        generate(args.model, pipe, p, guidance_scale, p_dir, num, popt_kwargs, args.dry_run, args.img_start)
 
 if __name__ == "__main__":
     main()
