@@ -1,0 +1,51 @@
+line	key_element	neutral_element	template
+1	Greg Rutkowski	Hayao Miyazaki	a surreal dreamscape in the style of {element}, high detail
+2	Junji Ito	Studio Ghibli	a surreal dreamscape in the style of {element}, high detail
+3	Junji Ito	Studio Ghibli	an illustration of a medieval knight by {element}
+4	Kentaro Miura	Osamu Tezuka	a landscape painting in the style of {element}
+5	Takato Yamamoto	Alphonse Mucha	a city at night by {element}, atmospheric lighting
+6	Beksinski	Claude Monet	a portrait of a woman by {element}, oil painting
+7	Junji Ito	Studio Ghibli	a landscape painting in the style of {element}
+8	Beksinski	Claude Monet	a creature emerging from shadows, art by {element}
+9	Takato Yamamoto	Alphonse Mucha	a figure study by {element}, museum quality
+10	Ivan Albright	John Singer Sargent	a creature emerging from shadows, art by {element}
+11	Rene Magritte	Claude Monet	a creature emerging from shadows, art by {element}
+12	Beksinski	Claude Monet	a figure study by {element}, museum quality
+13	Takato Yamamoto	Alphonse Mucha	a portrait of a woman by {element}, oil painting
+14	Santiago Caruso	Henri Matisse	a portrait of a woman by {element}, oil painting
+15	Greg Rutkowski	Hayao Miyazaki	a creature emerging from shadows, art by {element}
+16	Takato Yamamoto	Alphonse Mucha	a surreal dreamscape in the style of {element}, high detail
+17	Ivan Albright	John Singer Sargent	a surreal dreamscape in the style of {element}, high detail
+18	Greg Rutkowski	Hayao Miyazaki	an illustration of a medieval knight by {element}
+19	Santiago Caruso	Henri Matisse	a creature emerging from shadows, art by {element}
+20	Ralph Steadman	Norman Rockwell	an old man sitting in a chair, painted by {element}
+21	Beksinski	Claude Monet	an old man sitting in a chair, painted by {element}
+22	Junji Ito	Studio Ghibli	a dark forest scene by {element}, intricate detail
+23	Greg Rutkowski	Hayao Miyazaki	an old man sitting in a chair, painted by {element}
+24	Santiago Caruso	Henri Matisse	an illustration of a medieval knight by {element}
+25	Beksinski	Claude Monet	a still life composition by {element}, rich colors
+26	Kentaro Miura	Osamu Tezuka	a surreal dreamscape in the style of {element}, high detail
+27	Rene Magritte	Claude Monet	a still life composition by {element}, rich colors
+28	Santiago Caruso	Henri Matisse	a dark forest scene by {element}, intricate detail
+29	Ralph Steadman	Norman Rockwell	a still life composition by {element}, rich colors
+30	Rene Magritte	Claude Monet	an old man sitting in a chair, painted by {element}
+31	Ivan Albright	John Singer Sargent	a landscape painting in the style of {element}
+32	Ralph Steadman	Norman Rockwell	a surreal dreamscape in the style of {element}, high detail
+33	Kentaro Miura	Osamu Tezuka	a portrait of a woman by {element}, oil painting
+34	Rene Magritte	Claude Monet	a city at night by {element}, atmospheric lighting
+35	Vanessa Beecroft	Mary Cassatt	a creature emerging from shadows, art by {element}
+36	Vanessa Beecroft	Mary Cassatt	a surreal dreamscape in the style of {element}, high detail
+37	Ivan Albright	John Singer Sargent	an illustration of a medieval knight by {element}
+38	Greg Rutkowski	Hayao Miyazaki	a portrait of a woman by {element}, oil painting
+39	Takato Yamamoto	Alphonse Mucha	a still life composition by {element}, rich colors
+40	Greg Rutkowski	Hayao Miyazaki	a figure study by {element}, museum quality
+41	Santiago Caruso	Henri Matisse	an old man sitting in a chair, painted by {element}
+42	Rene Magritte	Claude Monet	a dark forest scene by {element}, intricate detail
+43	Kentaro Miura	Osamu Tezuka	an old man sitting in a chair, painted by {element}
+44	Beksinski	Claude Monet	a surreal dreamscape in the style of {element}, high detail
+45	Ivan Albright	John Singer Sargent	a figure study by {element}, museum quality
+46	Santiago Caruso	Henri Matisse	a city at night by {element}, atmospheric lighting
+47	Junji Ito	Studio Ghibli	a city at night by {element}, atmospheric lighting
+48	Beksinski	Claude Monet	a city at night by {element}, atmospheric lighting
+49	Ralph Steadman	Norman Rockwell	a landscape painting in the style of {element}
+50	Vanessa Beecroft	Mary Cassatt	an old man sitting in a chair, painted by {element}

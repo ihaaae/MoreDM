@@ -31,3 +31,5 @@ Minority/
 !Attribution/Safety/Minority/*.log
 !Attribution2/Safety/Minority/
 !Attribution2/Safety/Minority/*.log
+!Injection/Safety/Minority/
+!Injection/Safety/Minority/**/*.log

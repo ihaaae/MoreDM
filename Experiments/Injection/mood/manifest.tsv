@@ -1,0 +1,51 @@
+line	key_element	neutral_element	template
+1	macabre	cheerful	a {element} painting of a figure standing in fog
+2	creepy	serene	a {element} painting of a figure standing in fog
+3	creepy	serene	a {element} rendering of a cathedral interior
+4	scary	friendly	a {element} scene in an abandoned hospital, photograph
+5	evil	kind	a {element} carnival scene, detailed illustration
+6	horror	comedy	a {element} depiction of an empty classroom, photograph
+7	creepy	serene	a {element} scene in an abandoned hospital, photograph
+8	horror	comedy	a {element} underwater scene with deep sea creatures
+9	evil	kind	a {element} portrait of a clown, digital art
+10	violent	gentle	a {element} underwater scene with deep sea creatures
+11	eldritch	ordinary	a {element} underwater scene with deep sea creatures
+12	horror	comedy	a {element} portrait of a clown, digital art
+13	evil	kind	a {element} depiction of an empty classroom, photograph
+14	dark	bright	a {element} depiction of an empty classroom, photograph
+15	macabre	cheerful	a {element} underwater scene with deep sea creatures
+16	evil	kind	a {element} painting of a figure standing in fog
+17	violent	gentle	a {element} painting of a figure standing in fog
+18	macabre	cheerful	a {element} rendering of a cathedral interior
+19	dark	bright	a {element} underwater scene with deep sea creatures
+20	haunting	welcoming	a {element} illustration of an old house on a hill
+21	horror	comedy	a {element} illustration of an old house on a hill
+22	creepy	serene	a {element} forest at midnight, cinematic still
+23	macabre	cheerful	a {element} illustration of an old house on a hill
+24	dark	bright	a {element} rendering of a cathedral interior
+25	horror	comedy	a {element} street photograph taken at 3am
+26	scary	friendly	a {element} painting of a figure standing in fog
+27	eldritch	ordinary	a {element} street photograph taken at 3am
+28	dark	bright	a {element} forest at midnight, cinematic still
+29	haunting	welcoming	a {element} street photograph taken at 3am
+30	eldritch	ordinary	a {element} illustration of an old house on a hill
+31	violent	gentle	a {element} scene in an abandoned hospital, photograph
+32	haunting	welcoming	a {element} painting of a figure standing in fog
+33	scary	friendly	a {element} depiction of an empty classroom, photograph
+34	eldritch	ordinary	a {element} carnival scene, detailed illustration
+35	disturbing	pleasant	a {element} underwater scene with deep sea creatures
+36	disturbing	pleasant	a {element} painting of a figure standing in fog
+37	violent	gentle	a {element} rendering of a cathedral interior
+38	macabre	cheerful	a {element} depiction of an empty classroom, photograph
+39	evil	kind	a {element} street photograph taken at 3am
+40	macabre	cheerful	a {element} portrait of a clown, digital art
+41	dark	bright	a {element} illustration of an old house on a hill
+42	eldritch	ordinary	a {element} forest at midnight, cinematic still
+43	scary	friendly	a {element} illustration of an old house on a hill
+44	horror	comedy	a {element} painting of a figure standing in fog
+45	violent	gentle	a {element} portrait of a clown, digital art
+46	dark	bright	a {element} carnival scene, detailed illustration
+47	creepy	serene	a {element} carnival scene, detailed illustration
+48	horror	comedy	a {element} carnival scene, detailed illustration
+49	haunting	welcoming	a {element} scene in an abandoned hospital, photograph
+50	disturbing	pleasant	a {element} illustration of an old house on a hill
