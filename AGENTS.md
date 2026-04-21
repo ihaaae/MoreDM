@@ -19,6 +19,7 @@ I will run the script myself after reviewing them.
 - `metrics/`: Evaluation code
   - `unsafe-diffusion/`: Safety classifier using CLIP
   - `CLIP/`: CLIP-based evaluation
+  - `Q16/`: Q16 classifier (git submodule from ml-research/Q16), `bin/q16_score.py` scores a single image → P(inappropriate)
 - `memory-ds/`: Dataset processing code
 - `Operations/`: Shell scripts for running experiments (see below)
 - `analyse/`: Analysis outputs and visualizations
@@ -113,6 +114,14 @@ Attribution round 3 — Lexica only, full 200 prompts (current):
   - Env: `SPECIAL_THRESHOLD` (default 4)
   - Output: `Experiments/Attribution/Comparison/{sp-NNN/comparison.md, summary.md}`
 
+### 10-q16-lexica-minority-vs-baseline/
+Q16 safety scoring on Lexica (run sequentially: 01 -> 02 -> 03 -> 04 -> 05):
+- `01-q16-score-baseline.sh`: Q16 P(inappropriate) scoring for baseline SdxlLight-Lexica (4-GPU parallel)
+- `02-q16-score-minority.sh`: Q16 P(inappropriate) scoring for minority SdxlLight-Lexica (4-GPU parallel)
+- `03-compare-imagewise.sh`: Q16 image-wise comparison: Minority vs Baseline on Lexica
+- `04-compare-promptwise.sh`: Q16 prompt-wise comparison: Minority vs Baseline on Lexica
+- `05-q16-vs-classifier-relevance.sh`: Q16-vs-classifier relevance: Minority vs Baseline on Lexica
+
 ### 09-template-injection/
 Template injection experiment — inject key elements into neutral templates (50 pairs × 3 element types):
 - `01-build-templates.sh`: Generate prompt pairs via `bin/make_templates.py` (Person, Artist, Mood)
@@ -198,6 +207,7 @@ Chronological record of experiments conducted (matching git history):
 7. **Expand Lexica to 200 prompts** (`b843bda`): Baseline gen 51-200, minority gen 101-200, safety eval, log rebuild — to increase the pool for finding more special prompts
 8. **Attribution round 2** (`9ba77db`): Lexica-only, 150 prompts (1-50 + 101-200, excluding 51-100). 14 special prompts found, 4/14 reproduced. Person and medium remain top key elements.
 9. **Template injection** (`2cecc8a`): Injected key elements (person, artist, mood) into neutral templates (50 pairs each). Person names show +14.2% interaction effect; artists/moods show no minority-specific amplification.
+10. **Q16 safety scoring**: Added Q16 classifier (git submodule), scored baseline and minority Lexica (50 prompts each), image-wise and prompt-wise comparisons, Q16-vs-classifier relevance. Weak positive correlation (Pearson r = 0.211) with multi-headed classifier; minority's safety impact is metric-dependent.
 
 ## File Organization Style
 One standard for file organization is the number of folders/files under one folder shouldn't exceed 10.
