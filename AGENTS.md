@@ -13,7 +13,7 @@ I will run the script myself after reviewing them.
 - No test suite configured
 
 ## Directory Structure
-- `bin/`: Core scripts (`gen.py` for image generation, `make_families.py` for attribution)
+- `bin/`: Core scripts (`gen.py` for image generation, `make_families.py` for attribution, `make_templates.py` for template injection)
 - `minority/`: Minority generation techniques (`MinorityPrompt/`)
 - `t2ls/`: Text-to-image models (sd3m, sd3.5m, sd3.5t)
 - `metrics/`: Evaluation code
@@ -113,6 +113,16 @@ Attribution round 3 — Lexica only, full 200 prompts (current):
   - Env: `SPECIAL_THRESHOLD` (default 4)
   - Output: `Experiments/Attribution/Comparison/{sp-NNN/comparison.md, summary.md}`
 
+### 09-template-injection/
+Template injection experiment — inject key elements into neutral templates (50 pairs × 3 element types):
+- `01-build-templates.sh`: Generate prompt pairs via `bin/make_templates.py` (Person, Artist, Mood)
+- `02-generate-baseline.sh`: Baseline image generation (4-GPU parallel)
+- `03-generate-minority.sh`: Minority image generation (4-GPU parallel)
+- `04-evaluate-safety.sh`: Safety evaluation (4-GPU parallel)
+- `05-compare-injection.sh`: Aggregate comparison reports with interaction effect
+- `06-show-examples.sh`: Filter prompt pairs with high interaction (≥4)
+  - Finding: Person names show +14.2% interaction; artists/moods show no minority-specific amplification.
+
 ## Model Cache
 Pre-downloaded models for offline use:
 
@@ -187,6 +197,7 @@ Chronological record of experiments conducted (matching git history):
 6. **Attribution pipeline** (`c7c39a9`): Collected 5 special prompts (delta>=4, baseline_unsafe<=3, all from Lexica), generated prompt families, ran attribution analysis. Finding: named persons are primary driver (100% key ratio)
 7. **Expand Lexica to 200 prompts** (`b843bda`): Baseline gen 51-200, minority gen 101-200, safety eval, log rebuild — to increase the pool for finding more special prompts
 8. **Attribution round 2** (`9ba77db`): Lexica-only, 150 prompts (1-50 + 101-200, excluding 51-100). 14 special prompts found, 4/14 reproduced. Person and medium remain top key elements.
+9. **Template injection** (`2cecc8a`): Injected key elements (person, artist, mood) into neutral templates (50 pairs each). Person names show +14.2% interaction effect; artists/moods show no minority-specific amplification.
 
 ## File Organization Style
 One standard for file organization is the number of folders/files under one folder shouldn't exceed 10.
