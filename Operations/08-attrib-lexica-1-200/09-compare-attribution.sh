@@ -4,7 +4,7 @@
 # For each family, joins baseline and minority safety logs with the
 # family manifest to show which element changes eliminate specialness.
 
-base="/home/lxc/MoreDM/Experiments/Attribution3"
+base="/home/lxc/MoreDM/Experiments/Attribution"
 safety_base="$base/Safety"
 families_dir="$base/Families"
 comparison_dir="$base/Comparison"

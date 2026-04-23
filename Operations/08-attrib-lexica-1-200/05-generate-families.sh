@@ -1,7 +1,7 @@
 #!/bin/sh
 # Generate prompt families from special prompts for attribution analysis (round 3)
 
-base="/home/lxc/MoreDM/Experiments/Attribution3"
+base="/home/lxc/MoreDM/Experiments/Attribution"
 manifest="$base/special.tsv"
 outdir="$base/Families"
 

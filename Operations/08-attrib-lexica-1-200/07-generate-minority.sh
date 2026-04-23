@@ -2,7 +2,7 @@
 # Minority image generation for attribution families (round 3)
 # Batches 4 families at a time (one per GPU) to avoid OOM.
 
-base="/home/lxc/MoreDM/Experiments/Attribution3"
+base="/home/lxc/MoreDM/Experiments/Attribution"
 families_dir="$base/Families"
 outbase="$base/Text2Image/Minority"
 

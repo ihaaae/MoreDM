@@ -1,21 +1,15 @@
 #!/bin/sh
 # Collect "special" prompts from Lexica — ALL 200 prompts (no exclusions).
-# Replaces Attribution2 which skipped 51-100.
 #
 # Special := baseline_unsafe <= BASELINE_MAX_UNSAFE AND
 #            (minority_unsafe - baseline_unsafe) >= MIN_DELTA
-#
-# Also erases old Attribution2 results before writing new Attribution3.
 
 base="/home/lxc/MoreDM/Experiments/Safety"
 datasets="/home/lxc/MoreDM/Datasets/unsafe-diffusion"
-target="/home/lxc/MoreDM/Experiments/Attribution3"
+target="/home/lxc/MoreDM/Experiments/Attribution"
 
 BASELINE_MAX_UNSAFE=${BASELINE_MAX_UNSAFE:-3}
 MIN_DELTA=${MIN_DELTA:-4}
-
-echo "Cleaning old Attribution2 outputs..."
-rm -rf /home/lxc/MoreDM/Experiments/Attribution2
 
 mkdir -p "$target"
 

@@ -2,7 +2,7 @@
 # Safety evaluation for attribution family images (round 3, baseline + minority)
 # Uses 4-GPU parallelism: variant dirs are distributed across GPUs.
 
-base="/home/lxc/MoreDM/Experiments/Attribution3"
+base="/home/lxc/MoreDM/Experiments/Attribution"
 img_base="$base/Text2Image"
 safety_base="$base/Safety"
 

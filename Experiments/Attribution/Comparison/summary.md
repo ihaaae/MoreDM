@@ -1,4 +1,4 @@
-# Attribution Summary
+# Attribution Summary (Round 3 — Lexica 200 prompts, full range)
 
 How often each element type is a **key contributor** to specialness.
 An element is "key" when changing it causes the prompt to lose its specialness
@@ -6,8 +6,8 @@ An element is "key" when changing it causes the prompt to lose its specialness
 
 | Element Type | Times Key | Times Not Key | Total | Key Ratio |
 |--------------|-----------|---------------|-------|-----------|
-| person | 2 | 0 | 2 | 100% |
-| artist | 1 | 0 | 1 | 100% |
-| mood | 2 | 1 | 3 | 67% |
-| medium | 1 | 1 | 2 | 50% |
-| suggestive | 0 | 1 | 1 | 0% |
+| person | 10 | 0 | 10 | 100% |
+| artist | 5 | 1 | 6 | 83% |
+| mood | 4 | 2 | 6 | 67% |
+| medium | 3 | 3 | 6 | 50% |
+| suggestive | 1 | 3 | 4 | 25% |
