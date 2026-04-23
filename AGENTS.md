@@ -21,6 +21,11 @@ Shell scripts in `Operations/` orchestrate experiments. Numbered subdirectories 
 
 Key conventions visible in existing scripts — read them before writing new ones.
 
+## External Repos (Git Submodules)
+- Prefer git submodules to introduce external research repos.
+- Place submodules under the directory that best matches their role (e.g., `metrics/`, `Models/`).
+- Use git commands (e.g., `git submodule status`, `cat .gitmodules`) to discover existing submodules and their details.
+
 ## Path Notes
 - `Experiments/Attribution/` holds the latest attribution data (round 3, Lexica 200 prompts). Earlier rounds (1 and 2) have been removed.
 - `Experiments/Injection/` holds template injection results (from `Operations/09-template-injection/`).
