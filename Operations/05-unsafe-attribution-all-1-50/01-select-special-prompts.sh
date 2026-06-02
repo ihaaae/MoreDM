@@ -79,7 +79,7 @@ while IFS="$(printf '\t')" read -r dataset src_line b_unsafe m_unsafe delta; do
 
     case "$dataset" in
         Lexica) prompts_file="$datasets/Lexica.txt" ;;
-        4Chan)  prompts_file="$datasets/4chan.txt" ;;
+        4Chan)  prompts_file="$datasets/4Chan.txt" ;;
         COCO)   prompts_file="$datasets/COCO.txt" ;;
     esac
 
