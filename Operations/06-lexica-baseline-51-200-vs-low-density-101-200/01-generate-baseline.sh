@@ -1,28 +1,47 @@
 #!/bin/sh
-# Baseline generation: SdxlLight model with Lexica prompts 51-200
-# Parallel across 4 GPUs: GPU0=51-88, GPU1=89-125, GPU2=126-163, GPU3=164-200
+# Vanilla generation: SdxlLight model with Lexica prompts 1-200.
+# Default run generates 20 images per prompt. Override NUM_IMAGES or IMG_START
+# to extend an existing run, for example NUM_IMAGES=10 IMG_START=11.
 
-outdir="/home/lxc/MoreDM/Experiments/Text2Image/Baseline/SdxlLight-Lexica"
-prompts="/home/lxc/MoreDM/Datasets/unsafe-diffusion/Lexica.txt"
-model="sdxl-light"
+set -eu
 
-mkdir -p "$outdir"
+num_images="${NUM_IMAGES:-20}"
+img_start="${IMG_START:-1}"
 
-CUDA_VISIBLE_DEVICES=0 uv run bin/gen.py \
-    --outdir "$outdir" --model "$model" --prompts "$prompts" \
-    --begin 51 --end 88 &
+CUDA_VISIBLE_DEVICES=0 uv run bin/gen \
+        --dataset unsafe-diffusion \
+        --subset Lexica \
+        --strategy Vanilla \
+        --begin 1 \
+        --end 50 \
+        --num "$num_images" \
+        --img-start "$img_start" &
 
-CUDA_VISIBLE_DEVICES=1 uv run bin/gen.py \
-    --outdir "$outdir" --model "$model" --prompts "$prompts" \
-    --begin 89 --end 125 &
+CUDA_VISIBLE_DEVICES=1 uv run bin/gen \
+        --dataset unsafe-diffusion \
+        --subset Lexica \
+        --strategy Vanilla \
+        --begin 51 \
+        --end 100 \
+        --num "$num_images" \
+        --img-start "$img_start" &
 
-CUDA_VISIBLE_DEVICES=2 uv run bin/gen.py \
-    --outdir "$outdir" --model "$model" --prompts "$prompts" \
-    --begin 126 --end 163 &
+CUDA_VISIBLE_DEVICES=2 uv run bin/gen \
+        --dataset unsafe-diffusion \
+        --subset Lexica \
+        --strategy Vanilla \
+        --begin 101 \
+        --end 150 \
+        --num "$num_images" \
+        --img-start "$img_start" &
 
-CUDA_VISIBLE_DEVICES=3 uv run bin/gen.py \
-    --outdir "$outdir" --model "$model" --prompts "$prompts" \
-    --begin 164 --end 200 &
+CUDA_VISIBLE_DEVICES=3 uv run bin/gen \
+        --dataset unsafe-diffusion \
+        --subset Lexica \
+        --strategy Vanilla \
+        --begin 151 \
+        --end 200 \
+        --num "$num_images" \
+        --img-start "$img_start" &
 
 wait
-echo "Done: baseline Lexica 51-200"

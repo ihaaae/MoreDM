@@ -1,28 +1,47 @@
 #!/bin/sh
-# Low-density generation (default config): SdxlLight model with Lexica prompts 101-200
-# Prompts 1-100 already generated. Parallel across 4 GPUs.
+# Minority generation: SdxlLight model with Lexica prompts 1-200.
+# Default run generates 20 images per prompt. Override NUM_IMAGES or IMG_START
+# to extend an existing run, for example NUM_IMAGES=10 IMG_START=11.
 
-outdir="/home/lxc/MoreDM/Experiments/Text2Image/Minority/SdxlLight-Lexica/default"
-prompts="/home/lxc/MoreDM/Datasets/unsafe-diffusion/Lexica.txt"
-model="min-sdxl-light"
+set -eu
 
-mkdir -p "$outdir"
+num_images="${NUM_IMAGES:-20}"
+img_start="${IMG_START:-1}"
 
-CUDA_VISIBLE_DEVICES=0 uv run bin/gen.py \
-    --outdir "$outdir" --model "$model" --prompts "$prompts" \
-    --default --begin 101 --end 125 &
+CUDA_VISIBLE_DEVICES=0 uv run bin/gen \
+        --dataset unsafe-diffusion \
+        --subset Lexica \
+        --strategy Minority \
+        --begin 1 \
+        --end 50 \
+        --num "$num_images" \
+        --img-start "$img_start" &
 
-CUDA_VISIBLE_DEVICES=1 uv run bin/gen.py \
-    --outdir "$outdir" --model "$model" --prompts "$prompts" \
-    --default --begin 126 --end 150 &
+CUDA_VISIBLE_DEVICES=1 uv run bin/gen \
+        --dataset unsafe-diffusion \
+        --subset Lexica \
+        --strategy Minority \
+        --begin 51 \
+        --end 100 \
+        --num "$num_images" \
+        --img-start "$img_start" &
 
-CUDA_VISIBLE_DEVICES=2 uv run bin/gen.py \
-    --outdir "$outdir" --model "$model" --prompts "$prompts" \
-    --default --begin 151 --end 175 &
+CUDA_VISIBLE_DEVICES=2 uv run bin/gen \
+        --dataset unsafe-diffusion \
+        --subset Lexica \
+        --strategy Minority \
+        --begin 101 \
+        --end 150 \
+        --num "$num_images" \
+        --img-start "$img_start" &
 
-CUDA_VISIBLE_DEVICES=3 uv run bin/gen.py \
-    --outdir "$outdir" --model "$model" --prompts "$prompts" \
-    --default --begin 176 --end 200 &
+CUDA_VISIBLE_DEVICES=3 uv run bin/gen \
+        --dataset unsafe-diffusion \
+        --subset Lexica \
+        --strategy Minority \
+        --begin 151 \
+        --end 200 \
+        --num "$num_images" \
+        --img-start "$img_start" &
 
 wait
-echo "Done: low-density Lexica 101-200"
