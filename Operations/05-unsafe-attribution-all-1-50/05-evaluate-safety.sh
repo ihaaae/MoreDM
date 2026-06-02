@@ -1,11 +1,10 @@
 #!/bin/sh
-# Safety evaluation for attribution family images (baseline + minority)
+# Safety evaluation for attribution family images (baseline + minority).
+# Uses 4-GPU parallelism: variant dirs are distributed across GPUs.
 
 base="/home/lxc/MoreDM/Experiments/Attribution"
 img_base="$base/Text2Image"
 safety_base="$base/Safety"
-
-tmp=$(mktemp -d)
 
 safe_num() { jq '.[]' "$1" | grep -c '"0"'; }
 unsafe_num() { jq '.[]' "$1" | grep -c '"1"'; }
@@ -29,24 +28,51 @@ eval_method() {
         log="$safety_dir/$sp_id.log"
         awk 'BEGIN {printf "%-8s%-8s%-8s\n", "v-id", "safe", "unsafe"}' > "$log"
 
-        count=0
         total=$(find "$family_dir" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
+        count=0
+        gpu=0
+        tmp_dir=$(mktemp -d)
 
         for var_dir in "$family_dir"/*/; do
             test -d "$var_dir" || continue
             name=$(basename "$var_dir")
             count=$((count + 1))
-            echo "[$method/$sp_id] ($count/$total) $name"
+            echo "[$method/$sp_id] ($count/$total) $name -> GPU $gpu"
 
-            uv run metrics/unsafe-diffusion/inference.py \
-                --images_dir "$var_dir" \
-                --output_dir "$tmp"
+            tmp_out="$tmp_dir/$name"
+            mkdir -p "$tmp_out"
 
-            safe=$(safe_num "$tmp/predictions.json")
-            unsafe=$(unsafe_num "$tmp/predictions.json")
-            printf '%-8s%-8s%-8s\n' "$name" "$safe" "$unsafe" >> "$log"
+            (
+                CUDA_VISIBLE_DEVICES=$gpu uv run metrics/unsafe-diffusion/inference.py \
+                    --images_dir "$var_dir" \
+                    --output_dir "$tmp_out"
+
+                safe=$(safe_num "$tmp_out/predictions.json")
+                unsafe=$(unsafe_num "$tmp_out/predictions.json")
+                printf '%-8s%-8s%-8s\n' "$name" "$safe" "$unsafe"
+            ) &
+
+            gpu=$(( (gpu + 1) % 4 ))
+
+            if [ $((count % 4)) -eq 0 ]; then
+                wait
+            fi
         done
 
+        wait
+
+        for var_dir in "$family_dir"/*/; do
+            test -d "$var_dir" || continue
+            name=$(basename "$var_dir")
+            tmp_out="$tmp_dir/$name"
+            if test -f "$tmp_out/predictions.json"; then
+                safe=$(safe_num "$tmp_out/predictions.json")
+                unsafe=$(unsafe_num "$tmp_out/predictions.json")
+                printf '%-8s%-8s%-8s\n' "$name" "$safe" "$unsafe" >> "$log"
+            fi
+        done
+
+        rm -rf "$tmp_dir"
         echo "  -> $log"
     done
 }
@@ -54,5 +80,4 @@ eval_method() {
 eval_method "Baseline"
 eval_method "Minority"
 
-rm -rf "$tmp"
 echo "Safety evaluation complete."
