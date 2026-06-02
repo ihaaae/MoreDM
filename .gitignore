@@ -20,7 +20,7 @@ __pycache__/
 Thumbs.db
 
 # === Project: large data & artifacts ===
-Datasets/
+Datasets/*
 
 # Allowlist: commit the 4 unsafe-diffusion prompt lists
 !Datasets/unsafe-diffusion/
