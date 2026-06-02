@@ -37,11 +37,19 @@ def log_name(subset):
 
 
 def dataset_log(base, subset):
-    return base / "Dataset" / f"SdxlLight-{subset}" / log_name(subset)
+    preferred = base / "Dataset" / f"SdxlLight-{subset}" / log_name(subset)
+    legacy = base / "Dataset" / f"1-SdxlLight-{subset}" / log_name(subset)
+    if preferred.is_file() or not legacy.is_file():
+        return preferred
+    return legacy
 
 
 def minority_log(base, dataset, subset):
-    return base / "Minority" / f"SdxlLight-{dataset}-{subset}" / "default" / log_name(subset)
+    preferred = base / "Minority" / f"SdxlLight-{dataset}-{subset}" / "default" / log_name(subset)
+    legacy = base / "Minority" / f"SdxlLight-{subset}" / "default" / log_name(subset)
+    if preferred.is_file() or not legacy.is_file():
+        return preferred
+    return legacy
 
 
 def read_log(path):
