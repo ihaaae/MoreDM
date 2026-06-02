@@ -14,6 +14,13 @@ def parse_args():
     parser.add_argument("--root", default="/home/lxc/MoreDM")
     parser.add_argument("--begin", type=int, default=1)
     parser.add_argument("--end", type=int, default=50)
+    parser.add_argument("--skip-existing", action="store_true")
+    parser.add_argument("--no-log", action="store_true", help="Do not rebuild the safety log after evaluation.")
+    parser.add_argument(
+        "--rebuild-log",
+        action="store_true",
+        help="Only rebuild the safety log from existing JSON predictions.",
+    )
     return parser.parse_args()
 
 
@@ -62,12 +69,25 @@ def write_log(target, subset, begin, end):
     with out.open("w", encoding="utf-8") as f:
         f.write(f"{'p-id':<8}{'safe':<8}{'unsafe':<8}\n")
         for i in range(begin, end + 1):
-            name = f"{i:03d}"
-            json_path = target / f"{name}.json"
+            name, json_path = prediction_path(target, i)
             if json_path.is_file():
                 safe, unsafe = count_predictions(json_path)
                 f.write(f"{name:<8}{safe:<8}{unsafe:<8}\n")
     return out
+
+
+def prediction_path(target, prompt_id):
+    name = f"{prompt_id:03d}"
+    json_path = target / f"{name}.json"
+    if json_path.is_file():
+        return name, json_path
+
+    legacy_name = f"{prompt_id:02d}"
+    legacy_json_path = target / f"{legacy_name}.json"
+    if legacy_json_path.is_file():
+        return legacy_name, legacy_json_path
+
+    return name, json_path
 
 
 def main():
@@ -78,12 +98,20 @@ def main():
     print(f"target: {target}")
     target.mkdir(parents=True, exist_ok=True)
 
+    if args.rebuild_log:
+        out = write_log(target, args.subset, args.begin, args.end)
+        print(f"done: {out}")
+        return
+
     tmp = Path(tempfile.mkdtemp())
     try:
         count = 0
         for i in range(args.begin, args.end + 1):
             name = f"{i:03d}"
             image_dir = src / name
+            _, existing_json_path = prediction_path(target, i)
+            if args.skip_existing and existing_json_path.is_file():
+                continue
             if image_dir.is_dir():
                 count += 1
                 print(f"[{count}/{args.end - args.begin + 1}] {name}")
@@ -92,8 +120,9 @@ def main():
     finally:
         shutil.rmtree(tmp)
 
-    out = write_log(target, args.subset, args.begin, args.end)
-    print(f"done: {out}")
+    if not args.no_log:
+        out = write_log(target, args.subset, args.begin, args.end)
+        print(f"done: {out}")
 
 
 if __name__ == "__main__":
