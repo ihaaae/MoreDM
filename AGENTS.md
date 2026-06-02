@@ -11,13 +11,21 @@ I will run the script myself after reviewing them.
 
 ## GPU Parallelism
 This machine has **4x NVIDIA H100**. GPU-parallel execution is the default:
-- Generation and evaluation scripts MUST split work across 4 GPUs using `CUDA_VISIBLE_DEVICES=N ... &` and `wait`.
+- Operations shell scripts for generation/evaluation/scoring MUST split work across 4 GPUs using `CUDA_VISIBLE_DEVICES=N uv run ... &` and `wait`.
+- Python CLIs should expose ranges/options and let Operations shell wrappers shard work.
 - Split ranges as evenly as possible across 4 shards.
 
 ## Operations Scripts
 Shell scripts in `Operations/` orchestrate experiments. Numbered subdirectories run sequentially (01 → 02 → ...).
 
+Agents working on files under `Operations/` MUST read `Operations/AGENTS.md` first and follow its local workflow conventions.
+
 **New scripts**: Place directly in `Operations/` with sequential names (`001.sh`, `002.sh`, ...). Move to subdirectories after workflow is established.
+
+**Established scripts**: Once scripts live in a numbered subdirectory, prefer descriptive names over generic numbers. Use lowercase hyphenated names with the pattern `<verb>-<analysis-kind>-<scope-or-dataset>-<comparison>.sh` when practical. Comparison scripts should make the granularity explicit:
+- `compare-dataset-*`: aggregate whole-dataset safety summaries.
+- `compare-strategy-*`: aggregate strategy summaries, such as Minority vs Vanilla.
+- `compare-promptwise-*`: prompt-ID-level comparisons.
 
 Key conventions visible in existing scripts — read them before writing new ones.
 
@@ -34,6 +42,13 @@ Key conventions visible in existing scripts — read them before writing new one
 - Each separate experiment gets its own commit.
 - Commit includes: the Operations script(s) AND all outputs (safety json, logs, reports), EXCEPT generated images (which are gitignored).
 - Commit message: short summary of what the experiment does.
+
+## Progress Notes
+- `PROGRESS.md` should reflect research progress, not strictly mirror chronological engineering work.
+- Organize `PROGRESS.md` around experiments and research findings, not workflow conventions or script naming rules.
+- Early in an investigation, it is acceptable to log small operational details because the larger structure may not yet be clear.
+- As the research picture improves, condense earlier detailed logs into higher-level findings, hypotheses, and decisions, even when that violates strict time order.
+- Git history is an engineering record, but progress notes may reorganize events by research logic. For example, a section about `Operations/01-generation`, `02-evaluation`, and `03-comparison` does not need to discuss the refactor that created those folders unless the refactor matters scientifically.
 
 ## File Organization Style
 The number of folders/files under one folder shouldn't exceed 10.
