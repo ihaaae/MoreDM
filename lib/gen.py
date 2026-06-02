@@ -70,7 +70,7 @@ def min_gen(pipe, p, guidance_scale, p_dir, popt_kwargs, num, dry_run, img_start
     from torchvision.utils import save_image
     import numpy as np
 
-    from callback_util import ComposeCallback
+    from lib.callback_util import ComposeCallback
 
     def set_seed(seed: int):
         torch.random.manual_seed(seed)
@@ -143,7 +143,7 @@ def get_pipeline(model):
         guidance_scale = 1.0
     elif model == 'min-sdxl-light':
         from munch import munchify
-        from latent_sdxl import get_solver as get_solver_sdxl
+        from lib.latent_sdxl import get_solver as get_solver_sdxl
 
         NFE = 4
         solver_config = munchify({'num_sampling': NFE })
@@ -186,7 +186,7 @@ def generate(model, pipe, prompt, guidance_scale, out_dir, num, popt_kwargs, dry
         sd_gen(pipe, prompt, guidance_scale, out_dir, num, dry_run, img_start)
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description="t2l gen")
     parser.add_argument("--outdir", type=str, required=True)
     parser.add_argument("--model", type=str, required=True,
@@ -206,7 +206,7 @@ def main():
     parser.add_argument("--default", action="store_true",
                         help="Use default popt config for minority generation (init_word=handsome, num_opt_tokens=1)")
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     with open(args.prompts, encoding="utf-8") as f:
         all_lines = [line.strip() for line in f if line.strip()]

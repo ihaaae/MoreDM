@@ -40,7 +40,6 @@ analyse/
 # === Imported source trees: nested repos and local scratch files ===
 **/.git/
 bin/.gitignore
-bin/gen
 bin/gen-ds
 bin/ggen
 bin/*.log
