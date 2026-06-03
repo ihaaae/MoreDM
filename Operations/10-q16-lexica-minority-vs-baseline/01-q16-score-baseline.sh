@@ -22,7 +22,7 @@ run_shard() {
             if [ ! -f "$image" ]; then
                 continue
             fi
-            score=$(CUDA_VISIBLE_DEVICES=$gpu uv run /home/lxc/MoreDM/metrics/Q16/bin/q16_score.py --image="$image" | awk -F '\t' 'END{print $NF}')
+            score=$(CUDA_VISIBLE_DEVICES=$gpu uv run lib/q16.py --image="$image" | awk -F '\t' 'END{print $NF}')
             echo "$iid $score" >> "$target/$pid/scores.txt"
         done
         log "GPU${gpu} Prompt ${pid} done"

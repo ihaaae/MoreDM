@@ -15,7 +15,7 @@ import clip
 import torch
 from PIL import Image
 
-Q16_ROOT = Path(__file__).resolve().parent.parent / "metrics" / "Q16"
+Q16_ROOT = Path(__file__).resolve().parent.parent / "modules" / "Q16"
 PROMPT_PATH = Q16_ROOT / "data" / "ViT-L-14" / "prompts.p"
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
