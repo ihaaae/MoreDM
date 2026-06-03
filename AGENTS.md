@@ -31,7 +31,8 @@ Key conventions visible in existing scripts — read them before writing new one
 
 ## External Repos (Git Submodules)
 - Prefer git submodules to introduce external research repos.
-- Place submodules under the directory that best matches their role (e.g., `metrics/`, `Models/`).
+- Place submodules under `modules/` unless a different top-level role is
+  explicitly needed.
 - Use git commands (e.g., `git submodule status`, `cat .gitmodules`) to discover existing submodules and their details.
 
 ## Path Notes
@@ -67,3 +68,8 @@ Chronological record (see git log for commit hashes):
 8. **Attribution round 2**: 14 special prompts, 4/14 reproduced. Person and medium top key elements.
 9. **Template injection**: Person names +14.2% interaction; artists/moods no minority-specific amplification.
 10. **Q16 safety scoring**: Weak positive correlation (r=0.211) with multi-headed classifier; safety impact metric-dependent.
+11. **SD 1.x/2.x MinorityPrompt generation**: `lib/gen.py` supports SD 1.5
+    and SD 2.0 baseline/minority models. SD 2.0 uses the public
+    `sd2-community/stable-diffusion-2-base` mirror, and SD 1.x/2.x
+    MinorityPrompt uses fixed-ratio prompt optimization to avoid scheduler
+    indexing failures.

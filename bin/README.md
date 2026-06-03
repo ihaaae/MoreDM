@@ -14,6 +14,8 @@ Conventions:
 - Invoke scripts from the repository root with `uv run`.
 - Keep external research code in `modules/` submodules.
 - Keep reusable project implementation in `lib/`.
+- Run low-level generation through `lib/gen.py`; it supports `sdxl-light`,
+  `min-sdxl-light`, `sd15`, `min-sd15`, `sd20`, and `min-sd20`.
 - Run safety evaluation through `lib/eval.py`.
 - Run Q16 scoring through `lib/q16.py`.
 - Run CLIP scoring and analysis through `lib/clip.py` or the legacy-compatible

@@ -85,6 +85,20 @@ was strong but too small to support a stable element-level claim. More prompts
 and more images per prompt make it easier to separate recurring special prompts
 from one-off stochastic spikes.
 
+### SD 1.x / 2.x MinorityPrompt Generation
+
+The generation code also supports SD 1.5 and SD 2.0 base models:
+
+- `sd15` and `sd20`: baseline Stable Diffusion generation.
+- `min-sd15` and `min-sd20`: MinorityPrompt generation with the SD solver.
+- SD 2.0 uses `sd2-community/stable-diffusion-2-base`, a public mirror that
+  avoids authentication failures from the official gated model ID.
+- SD 1.x/2.x MinorityPrompt uses `p_opt_iter=10`, `t_lo=0.9`, and
+  `dynamic_pr=False`; the fixed-ratio timing avoids scheduler indexing
+  failures seen with the SDXL-Lightning default config.
+- Minority SD generation uses a unique placeholder token per prompt/image
+  output so repeated multi-image calls do not collide with tokenizer state.
+
 ## Operation 04: CLIP Semantic Relatedness
 
 The CLIP experiment tested a naive mechanism hypothesis: perhaps Vanilla
