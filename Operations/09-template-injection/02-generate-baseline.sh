@@ -30,7 +30,7 @@ for etype_dir in "$base"/person "$base"/artist "$base"/mood; do
         mkdir -p "$outdir"
 
         echo "[$etype/$variant] GPU $gpu: $num_lines prompts -> $outdir"
-        CUDA_VISIBLE_DEVICES=$gpu uv run bin/gen.py \
+        CUDA_VISIBLE_DEVICES=$gpu uv run lib/gen.py \
             --outdir "$outdir" \
             --model sdxl-light \
             --prompts "$prompts" \

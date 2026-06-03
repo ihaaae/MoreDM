@@ -42,7 +42,7 @@ for family_dir in $all_families; do
     mkdir -p "$outdir"
 
     echo "[$sp_id] GPU $gpu: $num_lines prompt(s) -> $outdir"
-    CUDA_VISIBLE_DEVICES=$gpu uv run bin/gen.py \
+    CUDA_VISIBLE_DEVICES=$gpu uv run lib/gen.py \
         --outdir "$outdir" \
         --model min-sdxl-light \
         --default \

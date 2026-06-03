@@ -25,19 +25,19 @@ done
 
 echo "Regenerating minority images for prompts 51-100 across 4 GPUs..."
 
-CUDA_VISIBLE_DEVICES=0 uv run bin/gen.py \
+CUDA_VISIBLE_DEVICES=0 uv run lib/gen.py \
     --outdir "$img_dir" --model "$model" --prompts "$prompts" \
     --default --begin 51 --end 63 &
 
-CUDA_VISIBLE_DEVICES=1 uv run bin/gen.py \
+CUDA_VISIBLE_DEVICES=1 uv run lib/gen.py \
     --outdir "$img_dir" --model "$model" --prompts "$prompts" \
     --default --begin 64 --end 75 &
 
-CUDA_VISIBLE_DEVICES=2 uv run bin/gen.py \
+CUDA_VISIBLE_DEVICES=2 uv run lib/gen.py \
     --outdir "$img_dir" --model "$model" --prompts "$prompts" \
     --default --begin 76 --end 88 &
 
-CUDA_VISIBLE_DEVICES=3 uv run bin/gen.py \
+CUDA_VISIBLE_DEVICES=3 uv run lib/gen.py \
     --outdir "$img_dir" --model "$model" --prompts "$prompts" \
     --default --begin 89 --end 100 &
 
