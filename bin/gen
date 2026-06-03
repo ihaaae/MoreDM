@@ -1,0 +1,129 @@
+#!/bin/sh
+set -eu
+
+usage() {
+    echo "Usage: bin/gen --dataset NAME --subset NAME --strategy Vanilla|Minority [options]"
+    echo
+    echo "Options:"
+    echo "  --root PATH       Project root (default: /home/lxc/MoreDM)"
+    echo "  --begin N         First prompt ID, 1-based inclusive (default: 1)"
+    echo "  --end N           Last prompt ID, 1-based inclusive (default: 50)"
+    echo "  --num N           Images per prompt (default: lib/gen.py default)"
+    echo "  --img-start N     First image index to write (default: 1)"
+    echo "  --smoke           Generate one image for one prompt"
+    echo "  --dry-run         Print writes without saving images"
+}
+
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
+    usage
+    exit 0
+fi
+
+root="/home/lxc/MoreDM"
+dataset=""
+subset=""
+strategy=""
+begin="1"
+end="50"
+num=""
+img_start="1"
+smoke=""
+dry_run=""
+
+while test "$#" -gt 0; do
+    case "$1" in
+        --dataset)
+            dataset="$2"
+            shift 2
+            ;;
+        --subset)
+            subset="$2"
+            shift 2
+            ;;
+        --strategy)
+            strategy="$2"
+            shift 2
+            ;;
+        --root)
+            root="$2"
+            shift 2
+            ;;
+        --begin)
+            begin="$2"
+            shift 2
+            ;;
+        --end)
+            end="$2"
+            shift 2
+            ;;
+        --num)
+            num="$2"
+            shift 2
+            ;;
+        --img-start)
+            img_start="$2"
+            shift 2
+            ;;
+        --smoke)
+            smoke="--smoke"
+            shift
+            ;;
+        --dry-run|--dry_run)
+            dry_run="--dry_run"
+            shift
+            ;;
+        *)
+            echo "Unknown argument: $1" >&2
+            usage >&2
+            exit 2
+            ;;
+    esac
+done
+
+if test -z "$dataset" || test -z "$subset" || test -z "$strategy"; then
+    echo "Missing required --dataset, --subset, or --strategy." >&2
+    usage >&2
+    exit 2
+fi
+
+prompts="$root/Datasets/$dataset/$subset.txt"
+extra_args=""
+if test -n "$num"; then
+    extra_args="$extra_args --num $num"
+fi
+if test -n "$smoke"; then
+    extra_args="$extra_args $smoke"
+fi
+if test -n "$dry_run"; then
+    extra_args="$extra_args $dry_run"
+fi
+
+case "$strategy" in
+    Vanilla)
+        # shellcheck disable=SC2086
+        exec uv run lib/gen.py \
+            --outdir "$root/Experiments/Text2Image/$strategy/SdxlLight-$dataset-$subset" \
+            --model "sdxl-light" \
+            --prompts "$prompts" \
+            --begin "$begin" \
+            --end "$end" \
+            --img-start "$img_start" \
+            $extra_args
+        ;;
+    Minority)
+        # shellcheck disable=SC2086
+        exec uv run lib/gen.py \
+            --outdir "$root/Experiments/Text2Image/$strategy/SdxlLight-$dataset-$subset/default" \
+            --model "min-sdxl-light" \
+            --prompts "$prompts" \
+            --begin "$begin" \
+            --end "$end" \
+            --img-start "$img_start" \
+            --default \
+            $extra_args
+        ;;
+    *)
+        echo "--strategy must be Vanilla or Minority" >&2
+        exit 2
+        ;;
+esac
