@@ -1,8 +1,15 @@
 import os
+import sys
 import argparse
+from pathlib import Path
 
 import torch
 from safetensors.torch import load_file
+
+ROOT = Path(__file__).resolve().parent.parent
+MINORITY_PROMPT_ROOT = ROOT / "modules" / "MinorityPrompt"
+sys.path.insert(0, str(MINORITY_PROMPT_ROOT))
+sys.path.insert(0, str(MINORITY_PROMPT_ROOT / "utils"))
 
 
 def sdxl_light_pipe():
@@ -70,7 +77,7 @@ def min_gen(pipe, p, guidance_scale, p_dir, popt_kwargs, num, dry_run, img_start
     from torchvision.utils import save_image
     import numpy as np
 
-    from lib.callback_util import ComposeCallback
+    from callback_util import ComposeCallback
 
     def set_seed(seed: int):
         torch.random.manual_seed(seed)
@@ -143,7 +150,7 @@ def get_pipeline(model):
         guidance_scale = 1.0
     elif model == 'min-sdxl-light':
         from munch import munchify
-        from lib.latent_sdxl import get_solver as get_solver_sdxl
+        from latent_sdxl import get_solver as get_solver_sdxl
 
         NFE = 4
         solver_config = munchify({'num_sampling': NFE })
