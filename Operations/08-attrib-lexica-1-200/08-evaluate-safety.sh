@@ -44,7 +44,7 @@ eval_method() {
             mkdir -p "$tmp_out"
 
             (
-                CUDA_VISIBLE_DEVICES=$gpu uv run metrics/unsafe-diffusion/inference.py \
+                CUDA_VISIBLE_DEVICES=$gpu uv run lib/eval.py \
                     --images_dir "$var_dir" \
                     --output_dir "$tmp_out"
 

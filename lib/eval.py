@@ -1,16 +1,21 @@
 import argparse
 import json
 import shutil
-import subprocess
+import sys
 import tempfile
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+UD_MODULE = ROOT / "modules" / "unsafe-diffusion"
+MH_CHECKPOINTS = UD_MODULE / "checkpoints" / "multi-headed"
+CLIP_CACHE_DIR = "/home/lxc/MoreDM/Models/clip/hub"
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Evaluate generated images with unsafe-diffusion.")
-    parser.add_argument("--dataset", required=True)
-    parser.add_argument("--subset", required=True)
-    parser.add_argument("--strategy", required=True, choices=["Vanilla", "Minority"])
+    parser.add_argument("--dataset")
+    parser.add_argument("--subset")
+    parser.add_argument("--strategy", choices=["Vanilla", "Minority"])
     parser.add_argument("--root", default="/home/lxc/MoreDM")
     parser.add_argument("--begin", type=int, default=1)
     parser.add_argument("--end", type=int, default=50)
@@ -21,7 +26,19 @@ def parse_args():
         action="store_true",
         help="Only rebuild the safety log from existing JSON predictions.",
     )
-    return parser.parse_args()
+    parser.add_argument("--images_dir", help="Evaluate one image directory directly.")
+    parser.add_argument("--output_dir", help="Directory for direct predictions.json output.")
+    parser.add_argument("--checkpoints", default=str(MH_CHECKPOINTS))
+    args = parser.parse_args()
+
+    direct = args.images_dir or args.output_dir
+    if direct:
+        if not args.images_dir or not args.output_dir:
+            parser.error("--images_dir and --output_dir must be used together")
+    elif not args.dataset or not args.subset or not args.strategy:
+        parser.error("--dataset, --subset, and --strategy are required unless using --images_dir")
+
+    return args
 
 
 def paths(root, dataset, subset, strategy):
@@ -49,19 +66,27 @@ def count_predictions(json_path):
     return safe, unsafe
 
 
-def run_inference(image_dir, output_dir):
-    subprocess.run(
-        [
-            "uv",
-            "run",
-            "metrics/unsafe-diffusion/inference.py",
-            "--images_dir",
-            str(image_dir),
-            "--output_dir",
-            str(output_dir),
-        ],
-        check=True,
-    )
+def run_inference(image_dir, output_dir, checkpoints=MH_CHECKPOINTS):
+    sys.path.insert(0, str(UD_MODULE))
+
+    import inference
+    import numpy as np
+    import torch
+
+    inference.CLIP_CACHE_DIR = CLIP_CACHE_DIR
+
+    dataset = inference.ImageDataset(images_dir=str(image_dir))
+    loader = torch.utils.data.DataLoader(dataset, batch_size=50, drop_last=False, shuffle=False)
+    result = inference.multiheaded_check(loader=loader, checkpoints=str(checkpoints))
+
+    head_predictions = np.array([result[head] for head in inference.unsafe_contents])
+    preds = np.int16(np.sum(head_predictions, axis=0) > 0)
+    final_result = {item: str(preds[i]) for i, item in enumerate(dataset)}
+
+    output_path = Path(output_dir)
+    output_path.mkdir(exist_ok=True, parents=True)
+    with (output_path / "predictions.json").open("w", encoding="utf-8") as f:
+        json.dump(final_result, f)
 
 
 def write_log(target, subset, begin, end):
@@ -92,6 +117,11 @@ def prediction_path(target, prompt_id):
 
 def main():
     args = parse_args()
+
+    if args.images_dir:
+        run_inference(args.images_dir, args.output_dir, args.checkpoints)
+        return
+
     src, target = paths(args.root, args.dataset, args.subset, args.strategy)
 
     print(f"src: {src}")

@@ -13,7 +13,7 @@ eval_range() {
     for i in $(seq "$lo" "$hi"); do
         name=$(printf "%03d" "$i")
         if test -d "$min_src/$name" && ! test -f "$min_tgt/$name.json"; then
-            CUDA_VISIBLE_DEVICES="$gpu" uv run metrics/unsafe-diffusion/inference.py \
+            CUDA_VISIBLE_DEVICES="$gpu" uv run lib/eval.py \
                 --images_dir "$min_src/$name" --output_dir "$tmp"
             mv "$tmp/predictions.json" "$min_tgt/$name.json"
         fi
