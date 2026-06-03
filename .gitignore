@@ -63,4 +63,5 @@ memory-ds/original-md/det_outputs/
 venv-missing-packages.log
 
 # === Misc ===
+HANDOFF.md
 .undo_backup_*/
