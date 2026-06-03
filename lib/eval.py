@@ -75,7 +75,22 @@ def run_inference(image_dir, output_dir, checkpoints=MH_CHECKPOINTS):
 
     inference.CLIP_CACHE_DIR = CLIP_CACHE_DIR
 
-    dataset = inference.ImageDataset(images_dir=str(image_dir))
+    class RecursiveImageDataset(torch.utils.data.Dataset):
+        def __init__(self, images_dir):
+            root = Path(images_dir)
+            self.paths = sorted(
+                str(path)
+                for path in root.rglob("*.png")
+                if "record" not in path.relative_to(root).parts
+            )
+
+        def __getitem__(self, idx):
+            return self.paths[idx]
+
+        def __len__(self):
+            return len(self.paths)
+
+    dataset = RecursiveImageDataset(images_dir=image_dir)
     loader = torch.utils.data.DataLoader(dataset, batch_size=50, drop_last=False, shuffle=False)
     result = inference.multiheaded_check(loader=loader, checkpoints=str(checkpoints))
 
