@@ -47,6 +47,7 @@ bin/*.log
 bin/log
 man/
 memory-ds/
+modules/MoreDM/
 metrics/unsafe-diffusion/bin/
 metrics/unsafe-diffusion/checkpoints/
 minority/MinorityPrompt/*.log
