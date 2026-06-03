@@ -4,12 +4,30 @@ import argparse
 from pathlib import Path
 
 import torch
+from munch import munchify
 from safetensors.torch import load_file
 
 ROOT = Path(__file__).resolve().parent.parent
 MINORITY_PROMPT_ROOT = ROOT / "modules" / "MinorityPrompt"
 sys.path.insert(0, str(MINORITY_PROMPT_ROOT))
 sys.path.insert(0, str(MINORITY_PROMPT_ROOT / "utils"))
+
+MODEL_CACHE_DIR = MINORITY_PROMPT_ROOT / "models" / "huggingface"
+LIGHTNING_CHECKPOINT = (
+    MINORITY_PROMPT_ROOT
+    / "models"
+    / "checkpoints"
+    / "sdxl-lightning"
+    / "sdxl_lightning_4step_unet.safetensors"
+)
+
+
+def sd_model_key(model):
+    if model.endswith("sd15"):
+        return "botp/stable-diffusion-v1-5"
+    if model.endswith("sd20"):
+        return "sd2-community/stable-diffusion-2-base"
+    raise ValueError(f"Unsupported SD model name: {model}")
 
 
 def sdxl_light_pipe():
@@ -18,7 +36,7 @@ def sdxl_light_pipe():
     dtype = torch.float16
     device = 'cuda'
     base_model_key = "stabilityai/stable-diffusion-xl-base-1.0"
-    light_model_ckpt = "/home/lxc/MoreDM/minority/MinorityPrompt/ckpt/sdxl_lightning_4step_unet.safetensors"
+    light_model_ckpt = str(LIGHTNING_CHECKPOINT)
 
     unet = UNet2DConditionModel.from_config(base_model_key, subfolder="unet").to("cuda", dtype)
     ext = os.path.splitext(light_model_ckpt)[1]
@@ -33,16 +51,14 @@ def sdxl_light_pipe():
     vae = AutoencoderKL.from_pretrained(
         "madebyollin/sdxl-vae-fp16-fix", 
         torch_dtype=dtype,
-        cache_dir="/home/lxc/MoreDM/Models/stable-diffusion/sdxl-light",
-        local_files_only=True).to(device)
+        cache_dir=str(MODEL_CACHE_DIR)).to(device)
 
     pipe = StableDiffusionXLPipeline.from_pretrained(
         base_model_key, 
         unet=unet, 
         vae=vae,
         torch_dtype=dtype, 
-        cache_dir="/home/lxc/MoreDM/Models/stable-diffusion/sdxl-light",
-        local_files_only=True).to(device)
+        cache_dir=str(MODEL_CACHE_DIR)).to(device)
     
     return pipe
 
@@ -55,10 +71,10 @@ def sd35t_light_pipe():
 
 # Effect: generate image with _pipe_, _p_ and _guidance_scale_
 # save the images to _p_dir_ in normal mode, save nothing in dry-run mode
-def sd_gen(pipe, p, guidance_scale, p_dir, num, dry_run, img_start=1):
+def sd_gen(pipe, p, guidance_scale, p_dir, num, dry_run, img_start=1, num_inference_steps=4):
     images = pipe(
         prompt=p,
-        num_inference_steps=4,
+        num_inference_steps=num_inference_steps,
         guidance_scale=guidance_scale,
         num_images_per_prompt=num
     ).images
@@ -70,7 +86,7 @@ def sd_gen(pipe, p, guidance_scale, p_dir, num, dry_run, img_start=1):
         else:
             image.save(img_p)
 
-def min_gen(pipe, p, guidance_scale, p_dir, popt_kwargs, num, dry_run, img_start=1):
+def min_sdxl_gen(pipe, p, guidance_scale, p_dir, popt_kwargs, num, dry_run, img_start=1):
     # imports and defs
     from pathlib import Path
 
@@ -105,6 +121,46 @@ def min_gen(pipe, p, guidance_scale, p_dir, popt_kwargs, num, dry_run, img_start
             print(f"save image to {img_p}")
         else:
             save_image(result, img_p, normalize=True)
+
+
+def min_sd_gen(pipe, p, guidance_scale, p_dir, popt_kwargs, num, dry_run, img_start=1):
+    from pathlib import Path
+
+    from torchvision.utils import save_image
+    import numpy as np
+
+    from callback_util import ComposeCallback
+
+    def set_seed(seed: int):
+        torch.random.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        np.random.seed(seed)
+
+    seed = 42
+    null_prompt = ""
+    set_seed(seed)
+
+    callback = ComposeCallback(
+        workdir=Path(p_dir),
+        frequency=1,
+        callbacks=["draw_noisy", "draw_tweedie"],
+    )
+
+    for j in range(img_start, img_start + num):
+        img_p = f"{p_dir}/{j:02}.png"
+        call_popt_kwargs = dict(popt_kwargs)
+        call_popt_kwargs["placeholder_string"] = f"<mp{Path(p_dir).name}{j:02}>_0"
+        result = pipe.sample(
+            prompt=[null_prompt, p],
+            cfg_guidance=guidance_scale,
+            callback_fn=callback,
+            popt_kwargs=call_popt_kwargs,
+        )
+        if dry_run:
+            print(f"save image to {img_p}")
+        else:
+            save_image(result, img_p, normalize=True)
+
 
 def get_default_popt_kwargs():
     """Return the default popt config for minority generation.
@@ -144,19 +200,35 @@ def get_popt_kwargs(e, v):
     popt_kwargs[e] = v
     return popt_kwargs
 
+
+def get_sd_popt_kwargs():
+    """Return the SD 1.x/2.x prompt-optimization config.
+
+    The SD solver's dynamic prompt-ratio path can index past its scheduler at
+    late timesteps, so these models use the upstream fixed-ratio timing.
+    """
+    popt_kwargs = get_default_popt_kwargs()
+    popt_kwargs.update({
+        "p_opt_iter": 10,
+        "t_lo": 0.9,
+        "dynamic_pr": False,
+    })
+    return popt_kwargs
+
+
 def get_pipeline(model):
     if model == 'sdxl-light':
         pipe = sdxl_light_pipe()
         guidance_scale = 1.0
+        num_inference_steps = 4
     elif model == 'min-sdxl-light':
-        from munch import munchify
         from latent_sdxl import get_solver as get_solver_sdxl
 
         NFE = 4
         solver_config = munchify({'num_sampling': NFE })
         method = "ddim_lightning"
         device = "cuda"
-        light_model_ckpt:str="/home/lxc/MoreDM/minority/MinorityPrompt/ckpt/sdxl_lightning_4step_unet.safetensors"
+        light_model_ckpt = str(LIGHTNING_CHECKPOINT)
 
         pipe = get_solver_sdxl(method,
                         solver_config=solver_config,
@@ -164,16 +236,42 @@ def get_pipeline(model):
                         light_model_ckpt=light_model_ckpt)
         
         guidance_scale = 1.0
+        num_inference_steps = NFE
+    elif model in ("sd15", "sd20"):
+        from diffusers import StableDiffusionPipeline
+
+        pipe = StableDiffusionPipeline.from_pretrained(
+            sd_model_key(model),
+            torch_dtype=torch.float16,
+            cache_dir=str(MODEL_CACHE_DIR),
+        ).to("cuda")
+        guidance_scale = 7.5
+        num_inference_steps = 50
+    elif model in ("min-sd15", "min-sd20"):
+        from latent_diffusion import get_solver
+
+        NFE = 50
+        solver_config = munchify({"num_sampling": NFE})
+        pipe = get_solver(
+            "ddim",
+            solver_config=solver_config,
+            model_key=sd_model_key(model),
+            device="cuda",
+            cache_dir=str(MODEL_CACHE_DIR),
+        )
+        guidance_scale = 7.5
+        num_inference_steps = NFE
     elif model == "sd3.5t":
         pipe = sd35t_light_pipe()
         guidance_scale = 0.0
+        num_inference_steps = 4
     else:
         raise ValueError(f"Unsupported model name: {model}")
     
-    return pipe, guidance_scale
+    return pipe, guidance_scale, num_inference_steps
 
 
-def generate(model, pipe, prompt, guidance_scale, out_dir, num, popt_kwargs, dry_run, img_start=1):
+def generate(model, pipe, prompt, guidance_scale, out_dir, num, popt_kwargs, dry_run, img_start=1, num_inference_steps=4):
     """Dispatch generation to the appropriate model-specific function.
     
     Args:
@@ -188,16 +286,18 @@ def generate(model, pipe, prompt, guidance_scale, out_dir, num, popt_kwargs, dry
         img_start: Starting image index for naming (default 1)
     """
     if model == 'min-sdxl-light':
-        min_gen(pipe, prompt, guidance_scale, out_dir, popt_kwargs, num, dry_run, img_start)
+        min_sdxl_gen(pipe, prompt, guidance_scale, out_dir, popt_kwargs, num, dry_run, img_start)
+    elif model in ("min-sd15", "min-sd20"):
+        min_sd_gen(pipe, prompt, guidance_scale, out_dir, popt_kwargs, num, dry_run, img_start)
     else:
-        sd_gen(pipe, prompt, guidance_scale, out_dir, num, dry_run, img_start)
+        sd_gen(pipe, prompt, guidance_scale, out_dir, num, dry_run, img_start, num_inference_steps)
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="t2l gen")
     parser.add_argument("--outdir", type=str, required=True)
     parser.add_argument("--model", type=str, required=True,
-                        choices=['sdxl-light', 'min-sdxl-light'])
+                        choices=['sdxl-light', 'min-sdxl-light', 'sd15', 'min-sd15', 'sd20', 'min-sd20'])
     parser.add_argument("--prompts", type=str, required=True,
                         help="Path to prompt file (one prompt per line)")
     parser.add_argument("--begin", type=int, required=True,
@@ -219,7 +319,7 @@ def main(argv=None):
         all_lines = [line.strip() for line in f if line.strip()]
     prompts = all_lines[args.begin - 1 : args.end]
 
-    pipe, guidance_scale = get_pipeline(args.model)
+    pipe, guidance_scale, num_inference_steps = get_pipeline(args.model)
 
     if args.num is not None:
         num = args.num
@@ -233,13 +333,14 @@ def main(argv=None):
 
     popt_kwargs = None
     # Determine popt_kwargs for minority generation
-    if args.model == 'min-sdxl-light':
-        if args.default:
-            popt_kwargs = get_default_popt_kwargs()
+    if args.model.startswith('min-sd') and args.model != 'min-sdxl-light':
+        popt_kwargs = get_sd_popt_kwargs()
+    elif args.model.startswith('min-'):
+        popt_kwargs = get_default_popt_kwargs()
     for p_id, p in enumerate(prompts, start=args.begin):
         p_dir = f"{args.outdir}/{p_id:03}"
         os.makedirs(p_dir, exist_ok=True)
-        generate(args.model, pipe, p, guidance_scale, p_dir, num, popt_kwargs, args.dry_run, args.img_start)
+        generate(args.model, pipe, p, guidance_scale, p_dir, num, popt_kwargs, args.dry_run, args.img_start, num_inference_steps)
 
 if __name__ == "__main__":
     main()
