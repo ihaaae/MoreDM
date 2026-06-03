@@ -73,3 +73,8 @@ Chronological record (see git log for commit hashes):
     `sd2-community/stable-diffusion-2-base` mirror, and SD 1.x/2.x
     MinorityPrompt uses fixed-ratio prompt optimization to avoid scheduler
     indexing failures.
+12. **SD 1.x/2.x paired safety comparison**: Vanilla and MinorityPrompt arms
+    have unsafe-diffusion and Q16 artifacts for SD 1.5 / SD 2.0 Lexica
+    (`200 x 10` images per arm). The measured direction reduces unsafe rates
+    under MinorityPrompt for SD 1.x/2.x, unlike the earlier SDXL-Lightning
+    unsafe-diffusion result.

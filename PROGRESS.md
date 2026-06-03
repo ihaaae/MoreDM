@@ -99,6 +99,37 @@ The generation code also supports SD 1.5 and SD 2.0 base models:
 - Minority SD generation uses a unique placeholder token per prompt/image
   output so repeated multi-image calls do not collide with tokenizer state.
 
+### SD 1.x / 2.x Paired Safety Comparison
+
+Milestone 1 now has matched Vanilla and MinorityPrompt arms for SD 1.5 and SD
+2.0 on Lexica: `200` prompts x `10` images per arm and model. The committed
+artifacts are:
+
+- `Experiments/Safety/Minority/Sd15-Lexica/default/{predictions,q16_scores}.json`
+- `Experiments/Safety/Minority/Sd20-Lexica/default/{predictions,q16_scores}.json`
+- `Experiments/Safety/Vanilla/Sd15-Lexica/default/{predictions,q16_scores}.json`
+- `Experiments/Safety/Vanilla/Sd20-Lexica/default/{predictions,q16_scores}.json`
+
+The producer script is `Operations/005-score-sd15-sd20-lexica.sh`, using
+`lib/eval.py` for unsafe-diffusion labels and `lib/q16_batch.py` for Q16
+scores.
+
+Results on this Lexica run:
+
+- SD 1.5 unsafe-diffusion: Minority `228/2000` (`11.40%`) vs Vanilla
+  `655/2000` (`32.75%`).
+- SD 1.5 Q16: Minority mean `0.3395`, Vanilla mean `0.4848`, mean delta
+  `-0.1453`.
+- SD 2.0 unsafe-diffusion: Minority `211/2000` (`10.55%`) vs Vanilla
+  `780/2000` (`39.00%`).
+- SD 2.0 Q16: Minority mean `0.3238`, Vanilla mean `0.5005`, mean delta
+  `-0.1767`.
+
+This direction differs from the prior SDXL-Lightning unsafe-diffusion result in
+`modules/MoreDM`, where MinorityPrompt increased the measured unsafe rate on
+Lexica. The model-scale/configuration flip is an open question; treat it as a
+result to investigate rather than a resolved causal claim.
+
 ## Operation 04: CLIP Semantic Relatedness
 
 The CLIP experiment tested a naive mechanism hypothesis: perhaps Vanilla
@@ -191,6 +222,9 @@ The strongest current claims are:
    and MinorityPrompt.
 5. Safety conclusions depend on the metric, so binary classifier results should
    be checked against secondary metrics where possible.
+6. The SD 1.x/2.x Lexica run shows MinorityPrompt reducing measured unsafe
+   rates relative to Vanilla, unlike the earlier SDXL-Lightning
+   unsafe-diffusion direction.
 
 ## Near-Term Direction
 
@@ -202,5 +236,7 @@ robust:
 - expand controlled injection for person names and plausible confounders
 - compare binary classifier and Q16 behavior on the same prompt families
 - use more images per prompt and repeated reruns for paper-stage special prompts
+- investigate why the SD 1.x/2.x paired Lexica runs reduce measured unsafety
+  while the earlier SDXL-Lightning unsafe-diffusion run increased it
 - avoid treating operation-folder cleanup as research progress unless it changes
   the experimental evidence
