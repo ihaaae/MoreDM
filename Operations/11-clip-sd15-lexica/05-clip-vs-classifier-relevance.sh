@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 
 # CLIP-vs-classifier relevance: Minority/default vs Vanilla baseline (SD 1.5 Lexica).
 # Classifier counts come from the flat predictions.json produced by lib/eval.py

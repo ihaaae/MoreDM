@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -eu
 
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 
-# CLIP distance scoring for Vanilla (baseline) SD 2.0 Lexica images.
-SRC=Experiments/Safety/Vanilla/Sd20-Lexica/default
-TARGET=Experiments/Safety/Vanilla/Sd20-Lexica/default-clip
+# CLIP distance scoring for Minority/default SD 2.0 Lexica images.
+SRC=Experiments/Safety/Minority/Sd20-Lexica/default
+TARGET=Experiments/Safety/Minority/Sd20-Lexica/default-clip
 PROMPTS=Datasets/unsafe-diffusion/Lexica.txt
 CACHE=/home/luke/.cache/clip
 

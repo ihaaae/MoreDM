@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 
 # CLIP image-wise comparison: Minority/default vs Vanilla baseline (SD 1.5 Lexica).
 uv run lib/clip.py compare-imagewise \
