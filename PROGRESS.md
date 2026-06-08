@@ -148,6 +148,75 @@ generation was more often less semantically related, not more. This failed
 result narrows the mechanism search: minority-induced unsafety does not appear
 to be explained by a general increase in prompt faithfulness.
 
+### SD 1.x / 2.x CLIP Alignment Comparison
+
+Ported the CLIP pipeline to the paired SD 1.5 / SD 2.0 arms to ask whether the
+SDXL alignment behaviour holds at smaller model scale. Producer scripts
+`Operations/006-015-*.sh` score `Vanilla` and `Minority` arms with `ViT-L-14`
+(`openai`) on Lexica (10 images/prompt) and write to `…/default-clip/`;
+`lib/clip.py` was extended so the relevance step reads the flat
+`predictions.json` directly. SD 1.5/2.0 cover all 200 prompts; SDXL uses the
+committed 50-prompt run (`Comparison/CLIP-PromptWise-Minority-vs-Baseline-Lexica`),
+since SDXL images are not in this repo.
+
+The metric is CLIP text-image **cosine similarity** (higher = better
+prompt-image alignment), the value `lib/clip.py` computes and stores — note the
+code and the original Op04 report label it "distance," which inverts the
+intuition. Typical matched ViT-L cosine similarity is ~`0.25`.
+
+Vanilla alignment is essentially flat across model scale (prompts 1-50,
+common with SDXL):
+
+| Model | Vanilla cosine sim |
+|-------|--------------------|
+| SDXL-Lightning | 0.2440 |
+| SD 1.5 | 0.2462 |
+| SD 2.0 | 0.2571 |
+
+The Minority effect, by contrast, flips with model scale (prompts 1-50,
+`delta = minority - vanilla`):
+
+| Model | Vanilla | Minority | Delta | Relative |
+|-------|---------|----------|-------|----------|
+| SDXL-Lightning | 0.2440 | 0.2561 | **+0.0121** | +5% |
+| SD 1.5 | 0.2462 | 0.1445 | **-0.1017** | -41% |
+| SD 2.0 | 0.2571 | 0.1501 | **-0.1070** | -42% |
+
+Full 200-prompt SD means agree: SD 1.5 `0.2474 -> 0.1504`, SD 2.0
+`0.2579 -> 0.1509`.
+
+- On SDXL-Lightning, MinorityPrompt leaves alignment roughly intact (a small
+  +5% increase); images stay prompt-faithful.
+- On SD 1.5 and SD 2.0, MinorityPrompt **collapses alignment by ~40%**; images
+  become much less faithful to the prompt.
+- This most likely explains the safety-direction flip in
+  [SD 1.x / 2.x Paired Safety Comparison](#sd-1x--2x-paired-safety-comparison):
+  on the smaller models the `p_opt_iter=10, t_lo=0.9` optimisation appears to
+  push samples off-prompt / off-distribution rather than toward faithful-but-rare
+  content, so the measured unsafe-rate drop (e.g. SD 1.5 `32.75% -> 11.40%`) may
+  be a degradation artifact rather than genuine safening. On SDXL the procedure
+  stays on-prompt and unsafe content is preserved.
+- Open caveat: SDXL is 50 prompts vs 200 for SD 1.5/2.0, and the ~40% drop is
+  large enough to warrant eyeballing a few SD 1.5/2.0 Minority images to confirm
+  visual degradation rather than a scoring artifact.
+
+**Known inconsistency — flagged, NOT fixed (needs a cleaner experiment).** The
+stored CLIP value is cosine **similarity** (higher = better prompt match;
+confirmed empirically: an image vs its own prompt scores ~`0.27-0.29`, vs
+unrelated prompts ~`0.04-0.11`). But `lib/clip.py` and the original Op04 report
+label it "distance" and read it as lower = better. Consequently the original
+50-prompt SDXL prose ("Minority more often *less* semantically related") and the
+table above (SDXL Minority `+0.012`, i.e. marginally *more* aligned) interpret
+the **same numbers in opposite directions**. Both are intentionally left
+unchanged for now. A clean redo should: (1) rename the metric to "similarity"
+end-to-end so the sign is unambiguous, and (2) re-run the SDXL vanilla-vs-Minority
+comparison at the full 200 prompts to match SD 1.5/2.0. On the current 50-prompt
+data, SDXL Minority is the more prompt-aligned arm (`0.2561` vs `0.2440`;
+30/50 prompts favour Minority), but the margin is small. The 200-prompt SDXL
+re-run is **currently blocked**: only the SDXL `predictions.json` are in this
+repo — the SDXL PNGs are absent (originals lived under `/home/lxc/MoreDM`), so
+SDXL images would have to be regenerated first.
+
 ## Operations 05, 07, 08: Attribution
 
 Attribution moved the project from aggregate safety rates to prompt elements.
