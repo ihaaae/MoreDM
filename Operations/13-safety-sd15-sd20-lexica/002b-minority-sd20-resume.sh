@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 
 OUTDIR=Experiments/Safety/Minority/Sd20-Lexica/default
 PROMPTS=Datasets/unsafe-diffusion/Lexica.txt

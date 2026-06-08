@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -eu
 
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 
-OUTDIR=Experiments/Safety/Minority/Sd15-Lexica/default
+OUTDIR=Experiments/Safety/Minority/Sd20-Lexica/default
 PROMPTS=Datasets/unsafe-diffusion/Lexica.txt
-MODEL=min-sd15
+MODEL=min-sd20
 
 CUDA_VISIBLE_DEVICES=0 uv run lib/gen.py --outdir "$OUTDIR" --model "$MODEL" --prompts "$PROMPTS" --begin 1   --end 50  --num 10 --default &
 CUDA_VISIBLE_DEVICES=1 uv run lib/gen.py --outdir "$OUTDIR" --model "$MODEL" --prompts "$PROMPTS" --begin 51  --end 100 --num 10 --default &

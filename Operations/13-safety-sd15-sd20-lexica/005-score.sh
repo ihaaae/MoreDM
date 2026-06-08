@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 
 MIN15=Experiments/Safety/Minority/Sd15-Lexica/default
 MIN20=Experiments/Safety/Minority/Sd20-Lexica/default
