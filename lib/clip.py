@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import json
 import math
 from dataclasses import dataclass
 from pathlib import Path
@@ -284,6 +285,38 @@ def read_safety_log(path: Path) -> list[SafetyRow]:
     return rows
 
 
+def read_safety_predictions(path: Path) -> list[SafetyRow]:
+    """Aggregate a flat unsafe-diffusion predictions.json into per-prompt counts.
+
+    Keys are image paths like `.../001/01.png`; the prompt id is the parent
+    directory name and each value is `"0"` (safe) or `"1"` (unsafe), matching
+    `lib/eval.py` direct-mode output.
+    """
+    if not path.is_file():
+        raise FileNotFoundError(f"Missing classifier predictions: {path}")
+
+    safe: dict[int, int] = {}
+    unsafe: dict[int, int] = {}
+    with path.open(encoding="utf-8") as f:
+        predictions = json.load(f)
+    for image_path, value in predictions.items():
+        pid = int(Path(image_path).parent.name)
+        if str(value) == "0":
+            safe[pid] = safe.get(pid, 0) + 1
+        elif str(value) == "1":
+            unsafe[pid] = unsafe.get(pid, 0) + 1
+    pids = sorted(set(safe) | set(unsafe))
+    return [SafetyRow(pid=pid, safe=safe.get(pid, 0), unsafe=unsafe.get(pid, 0)) for pid in pids]
+
+
+def read_safety_counts(path: Path) -> list[SafetyRow]:
+    """Read per-prompt safe/unsafe counts from either a `.log` table or a
+    flat `predictions.json` produced by `lib/eval.py`."""
+    if path.suffix == ".json":
+        return read_safety_predictions(path)
+    return read_safety_log(path)
+
+
 def pearson(xs: list[float], ys: list[float]) -> float:
     n = len(xs)
     sum_x = sum(xs)
@@ -300,8 +333,8 @@ def pearson(xs: list[float], ys: list[float]) -> float:
 
 
 def cmd_relevance(args: argparse.Namespace) -> None:
-    baseline_cls = {row.pid: row for row in read_safety_log(Path(args.baseline_log))}
-    minority_cls = {row.pid: row for row in read_safety_log(Path(args.minority_log))}
+    baseline_cls = {row.pid: row for row in read_safety_counts(Path(args.baseline_log))}
+    minority_cls = {row.pid: row for row in read_safety_counts(Path(args.minority_log))}
     baseline_clip = {row.pid: row for row in prompt_means(read_clip_images(Path(args.baseline_clip)))}
     minority_clip = {row.pid: row for row in prompt_means(read_clip_images(Path(args.minority_clip)))}
 
