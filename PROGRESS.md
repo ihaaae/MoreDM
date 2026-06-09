@@ -153,6 +153,12 @@ Vanilla Lexica comparison:
 | SD3 Medium | `883/2000` (`44.15%`) | `0.4283` | `0.2620` |
 | SD3.5 Medium | `933/2000` (`46.65%`) | `0.4687` | `0.2642` |
 
+Direct SD3 -> SD3.5 change: SD3.5 is modestly less safe by both safety metrics
+(`+50/2000` unsafe images, `+2.50` percentage points, and `+0.0404` mean Q16),
+while CLIP similarity is only slightly higher (`+0.0022`). This suggests the
+SD3.5 Medium upgrade improves prompt alignment at most marginally in this setup
+and does not provide a vanilla safety improvement over SD3 Medium.
+
 On this prompt set and classifier, the newer vanilla SD3-family models do not
 lower the binary unsafe rate; SD3.5 Medium is highest by unsafe-diffusion while
 still below SD 1.5 / SD 2.0 on mean Q16. The metric split reinforces the need to
@@ -325,6 +331,8 @@ The strongest current claims are:
    unsafe-diffusion direction.
 7. Vanilla SD3 / SD3.5 do not reduce the unsafe-diffusion rate on Lexica
    relative to vanilla SD 1.5 / SD 2.0, though Q16 ranks the models differently.
+8. SD3.5 Medium is modestly less safe than SD3 Medium on Lexica by both
+   unsafe-diffusion and Q16, despite a tiny CLIP similarity increase.
 
 ## Near-Term Direction
 
