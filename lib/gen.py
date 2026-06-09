@@ -66,8 +66,6 @@ def sd3_pipe():
     from diffusers import StableDiffusion3Pipeline
     from transformers import T5TokenizerFast
 
-    # SD3 medium is the variant compatible with the pinned diffusers (0.29.x);
-    # SD3.5 needs a newer diffusers and a different transformer config.
     repo = "stabilityai/stable-diffusion-3-medium-diffusers"
 
     # The repo's tokenizer_3/tokenizer.json uses a schema newer than the pinned
@@ -84,6 +82,50 @@ def sd3_pipe():
         repo,
         tokenizer_3=tokenizer_3,
         torch_dtype=torch.bfloat16,
+        cache_dir=str(MODEL_CACHE_DIR),
+    ).to("cuda")
+    return pipe
+
+
+def sd35_pipe():
+    from diffusers import StableDiffusion3Pipeline
+    from transformers import CLIPTextModelWithProjection, CLIPTokenizer, T5EncoderModel, T5TokenizerFast
+
+    sd3_repo = "stabilityai/stable-diffusion-3-medium-diffusers"
+    sd35_repo = "stabilityai/stable-diffusion-3.5-medium"
+    dtype = torch.bfloat16
+
+    # SD3.5 uses the same three pretrained text encoders/tokenizers family as
+    # SD3. Reuse the already-cached SD3 text assets and only fetch SD3.5-specific
+    # components (notably the transformer) from the SD3.5 repo.
+    tokenizer = CLIPTokenizer.from_pretrained(
+        sd3_repo, subfolder="tokenizer", cache_dir=str(MODEL_CACHE_DIR)
+    )
+    tokenizer_2 = CLIPTokenizer.from_pretrained(
+        sd3_repo, subfolder="tokenizer_2", cache_dir=str(MODEL_CACHE_DIR)
+    )
+    tokenizer_3 = T5TokenizerFast.from_pretrained(
+        sd3_repo, subfolder="tokenizer_3", cache_dir=str(MODEL_CACHE_DIR), from_slow=True
+    )
+    text_encoder = CLIPTextModelWithProjection.from_pretrained(
+        sd3_repo, subfolder="text_encoder", torch_dtype=dtype, cache_dir=str(MODEL_CACHE_DIR)
+    )
+    text_encoder_2 = CLIPTextModelWithProjection.from_pretrained(
+        sd3_repo, subfolder="text_encoder_2", torch_dtype=dtype, cache_dir=str(MODEL_CACHE_DIR)
+    )
+    text_encoder_3 = T5EncoderModel.from_pretrained(
+        sd3_repo, subfolder="text_encoder_3", torch_dtype=dtype, cache_dir=str(MODEL_CACHE_DIR)
+    )
+
+    pipe = StableDiffusion3Pipeline.from_pretrained(
+        sd35_repo,
+        tokenizer=tokenizer,
+        tokenizer_2=tokenizer_2,
+        tokenizer_3=tokenizer_3,
+        text_encoder=text_encoder,
+        text_encoder_2=text_encoder_2,
+        text_encoder_3=text_encoder_3,
+        torch_dtype=dtype,
         cache_dir=str(MODEL_CACHE_DIR),
     ).to("cuda")
     return pipe
@@ -284,6 +326,10 @@ def get_pipeline(model):
         pipe = sd3_pipe()
         guidance_scale = 7.0
         num_inference_steps = 28
+    elif model == "sd35":
+        pipe = sd35_pipe()
+        guidance_scale = 4.5
+        num_inference_steps = 40
     else:
         raise ValueError(f"Unsupported model name: {model}")
     
@@ -294,7 +340,7 @@ def generate(model, pipe, prompt, guidance_scale, out_dir, num, popt_kwargs, dry
     """Dispatch generation to the appropriate model-specific function.
     
     Args:
-        model: Model name ('sdxl-light', 'min-sdxl-light', 'sd15', 'sd20', 'sd3', 'min-*')
+        model: Model name ('sdxl-light', 'min-sdxl-light', 'sd15', 'sd20', 'sd3', 'sd35', 'min-*')
         pipe: The loaded pipeline
         prompt: Text prompt for generation
         guidance_scale: CFG guidance scale
@@ -316,7 +362,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="t2l gen")
     parser.add_argument("--outdir", type=str, required=True)
     parser.add_argument("--model", type=str, required=True,
-                        choices=['sdxl-light', 'min-sdxl-light', 'sd15', 'min-sd15', 'sd20', 'min-sd20', 'sd3'])
+                        choices=['sdxl-light', 'min-sdxl-light', 'sd15', 'min-sd15', 'sd20', 'min-sd20', 'sd3', 'sd35'])
     parser.add_argument("--prompts", type=str, required=True,
                         help="Path to prompt file (one prompt per line)")
     parser.add_argument("--begin", type=int, required=True,

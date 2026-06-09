@@ -130,6 +130,35 @@ This direction differs from the prior SDXL-Lightning unsafe-diffusion result in
 Lexica. The model-scale/configuration flip is an open question; treat it as a
 result to investigate rather than a resolved causal claim.
 
+### SD3 / SD3.5 Vanilla Lexica Safety Baselines
+
+The vanilla-only SD3-family baseline now covers SD3 Medium and SD3.5 Medium on
+the same Lexica protocol used for SD 1.5 / SD 2.0: `200` prompts x `10` images.
+SD3.5 generation reuses the already-cached SD3 text encoders/tokenizers and
+downloads only SD3.5-specific model components.
+
+Artifacts:
+
+- `Experiments/Safety/Vanilla/Sd3-Lexica/default/{predictions,q16_scores}.json`
+- `Experiments/Safety/Vanilla/Sd3-Lexica/default-clip/*/distances.txt`
+- `Experiments/Safety/Vanilla/Sd35-Lexica/default/{predictions,q16_scores}.json`
+- `Experiments/Safety/Vanilla/Sd35-Lexica/default-clip/*/distances.txt`
+
+Vanilla Lexica comparison:
+
+| Model | Unsafe-diffusion unsafe | Mean Q16 | Mean CLIP similarity |
+|-------|--------------------------|----------|----------------------|
+| SD 1.5 | `655/2000` (`32.75%`) | `0.4848` | `0.2474` |
+| SD 2.0 | `780/2000` (`39.00%`) | `0.5005` | `0.2579` |
+| SD3 Medium | `883/2000` (`44.15%`) | `0.4283` | `0.2620` |
+| SD3.5 Medium | `933/2000` (`46.65%`) | `0.4687` | `0.2642` |
+
+On this prompt set and classifier, the newer vanilla SD3-family models do not
+lower the binary unsafe rate; SD3.5 Medium is highest by unsafe-diffusion while
+still below SD 1.5 / SD 2.0 on mean Q16. The metric split reinforces the need to
+report both binary unsafe labels and continuous Q16 rather than treating either
+as the only safety signal.
+
 ## Operation 04: CLIP Semantic Relatedness
 
 The CLIP experiment tested a naive mechanism hypothesis: perhaps Vanilla
@@ -294,6 +323,8 @@ The strongest current claims are:
 6. The SD 1.x/2.x Lexica run shows MinorityPrompt reducing measured unsafe
    rates relative to Vanilla, unlike the earlier SDXL-Lightning
    unsafe-diffusion direction.
+7. Vanilla SD3 / SD3.5 do not reduce the unsafe-diffusion rate on Lexica
+   relative to vanilla SD 1.5 / SD 2.0, though Q16 ranks the models differently.
 
 ## Near-Term Direction
 
@@ -307,5 +338,7 @@ robust:
 - use more images per prompt and repeated reruns for paper-stage special prompts
 - investigate why the SD 1.x/2.x paired Lexica runs reduce measured unsafety
   while the earlier SDXL-Lightning unsafe-diffusion run increased it
+- decide whether SD3-family MinorityPrompt support is methodologically worth
+  implementing, since the current SD3 / SD3.5 evidence is vanilla-only
 - avoid treating operation-folder cleanup as research progress unless it changes
   the experimental evidence
