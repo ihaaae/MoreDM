@@ -62,12 +62,31 @@ def sdxl_light_pipe():
     
     return pipe
 
-def sd35t_light_pipe():
+def sd3_pipe():
     from diffusers import StableDiffusion3Pipeline
-    StableDiffusion3Pipeline.from_pretrained(
-        "stabilityai/stable-diffusion-3.5-large-turbo",
+    from transformers import T5TokenizerFast
+
+    # SD3 medium is the variant compatible with the pinned diffusers (0.29.x);
+    # SD3.5 needs a newer diffusers and a different transformer config.
+    repo = "stabilityai/stable-diffusion-3-medium-diffusers"
+
+    # The repo's tokenizer_3/tokenizer.json uses a schema newer than the pinned
+    # tokenizers (0.13.3) can parse, so loading the fast tokenizer directly fails.
+    # Rebuild the fast T5 tokenizer from the slow spiece.model instead
+    # (from_slow=True), which produces the PreTrainedTokenizerFast that diffusers
+    # requires while staying within the pinned transformers/tokenizers versions.
+    # Needs sentencepiece + protobuf (additive deps; no version bumps).
+    tokenizer_3 = T5TokenizerFast.from_pretrained(
+        repo, subfolder="tokenizer_3", cache_dir=str(MODEL_CACHE_DIR), from_slow=True
+    )
+
+    pipe = StableDiffusion3Pipeline.from_pretrained(
+        repo,
+        tokenizer_3=tokenizer_3,
         torch_dtype=torch.bfloat16,
-        cache_dir='/home/lxc/a800-data/lxc/sd3.5t').to("cuda")
+        cache_dir=str(MODEL_CACHE_DIR),
+    ).to("cuda")
+    return pipe
 
 # Effect: generate image with _pipe_, _p_ and _guidance_scale_
 # save the images to _p_dir_ in normal mode, save nothing in dry-run mode
@@ -261,10 +280,10 @@ def get_pipeline(model):
         )
         guidance_scale = 7.5
         num_inference_steps = NFE
-    elif model == "sd3.5t":
-        pipe = sd35t_light_pipe()
-        guidance_scale = 0.0
-        num_inference_steps = 4
+    elif model == "sd3":
+        pipe = sd3_pipe()
+        guidance_scale = 7.0
+        num_inference_steps = 28
     else:
         raise ValueError(f"Unsupported model name: {model}")
     
@@ -275,7 +294,7 @@ def generate(model, pipe, prompt, guidance_scale, out_dir, num, popt_kwargs, dry
     """Dispatch generation to the appropriate model-specific function.
     
     Args:
-        model: Model name ('sdxl-light', 'min-sdxl-light', 'sd3.5t')
+        model: Model name ('sdxl-light', 'min-sdxl-light', 'sd15', 'sd20', 'sd3', 'min-*')
         pipe: The loaded pipeline
         prompt: Text prompt for generation
         guidance_scale: CFG guidance scale
@@ -297,7 +316,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="t2l gen")
     parser.add_argument("--outdir", type=str, required=True)
     parser.add_argument("--model", type=str, required=True,
-                        choices=['sdxl-light', 'min-sdxl-light', 'sd15', 'min-sd15', 'sd20', 'min-sd20'])
+                        choices=['sdxl-light', 'min-sdxl-light', 'sd15', 'min-sd15', 'sd20', 'min-sd20', 'sd3'])
     parser.add_argument("--prompts", type=str, required=True,
                         help="Path to prompt file (one prompt per line)")
     parser.add_argument("--begin", type=int, required=True,
