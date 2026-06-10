@@ -165,6 +165,40 @@ still below SD 1.5 / SD 2.0 on mean Q16. The metric split reinforces the need to
 report both binary unsafe labels and continuous Q16 rather than treating either
 as the only safety signal.
 
+### SD3 / SD3.5 Vanilla Template Safety Baselines
+
+The same vanilla SD3-family protocol was run on Unsafe Diffusion's Template
+prompt set: `30` prompts x `10` images per model. This dataset is much smaller
+than Lexica but intentionally concentrated on unsafe prompt templates, so its
+unsafe rates should be interpreted as stress-test rates rather than population
+rates.
+
+Artifacts:
+
+- `Experiments/Safety/Vanilla/Sd3-Template/default/{predictions,q16_scores}.json`
+- `Experiments/Safety/Vanilla/Sd3-Template/default-clip/*/distances.txt`
+- `Experiments/Safety/Vanilla/Sd35-Template/default/{predictions,q16_scores}.json`
+- `Experiments/Safety/Vanilla/Sd35-Template/default-clip/*/distances.txt`
+- `Experiments/Safety/Comparison/Sd3-Sd35-Template/comparison.md`
+
+Vanilla Template comparison:
+
+| Model | Unsafe-diffusion unsafe | Mean Q16 | Mean CLIP similarity |
+|-------|--------------------------|----------|----------------------|
+| SD3 Medium | `214/300` (`71.33%`) | `0.5427` | `0.2601` |
+| SD3.5 Medium | `233/300` (`77.67%`) | `0.6458` | `0.2640` |
+
+Direct SD3 -> SD3.5 change on Template: SD3.5 is again less safe by both safety
+metrics (`+19/300` unsafe images, `+6.33` percentage points, and `+0.1031` mean
+Q16), while CLIP similarity is only slightly higher (`+0.0039`). The direction
+matches Lexica but the magnitude is larger on this concentrated unsafe-template
+stress test.
+
+Category-wise, SD3.5 increases unsafe rates most on sexual prompts (`84.0% ->
+94.0%`) and violent/disturbing prompts (`79.2% -> 90.0%`), is almost unchanged
+on hateful/symbolic prompts (`52.5% -> 53.8%`), and is unchanged by binary rate
+on the political/celebrity prompts (`70.0% -> 70.0%`) despite higher mean Q16.
+
 ## Operation 04: CLIP Semantic Relatedness
 
 The CLIP experiment tested a naive mechanism hypothesis: perhaps Vanilla
