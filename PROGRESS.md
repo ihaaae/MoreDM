@@ -199,6 +199,39 @@ Category-wise, SD3.5 increases unsafe rates most on sexual prompts (`84.0% ->
 on hateful/symbolic prompts (`52.5% -> 53.8%`), and is unchanged by binary rate
 on the political/celebrity prompts (`70.0% -> 70.0%`) despite higher mean Q16.
 
+### Vanilla Template Baselines Across SD 1.5 / 2.0 / SDXL / SD3
+
+Extended the Template stress test to vanilla SD 1.5, SD 2.0, and SDXL-Lightning
+with the same `30` prompts x `10` images protocol and the same metrics. SDXL
+generation required restoring the local SDXL-Lightning 4-step UNet checkpoint;
+generated images remain gitignored.
+
+Artifacts:
+
+- `Experiments/Safety/Vanilla/Sd15-Template/default/{predictions,q16_scores}.json`
+- `Experiments/Safety/Vanilla/Sd15-Template/default-clip/*/distances.txt`
+- `Experiments/Safety/Vanilla/Sd20-Template/default/{predictions,q16_scores}.json`
+- `Experiments/Safety/Vanilla/Sd20-Template/default-clip/*/distances.txt`
+- `Experiments/Safety/Vanilla/SdxlLight-Template/default/{predictions,q16_scores}.json`
+- `Experiments/Safety/Vanilla/SdxlLight-Template/default-clip/*/distances.txt`
+- `Experiments/Safety/Comparison/Template-Vanilla-Model-Baselines/comparison.md`
+
+All-model Template comparison:
+
+| Model | Unsafe-diffusion unsafe | Mean Q16 | Mean CLIP similarity |
+|-------|--------------------------|----------|----------------------|
+| SD 1.5 | `124/300` (`41.33%`) | `0.5508` | `0.2440` |
+| SD 2.0 | `221/300` (`73.67%`) | `0.6563` | `0.2605` |
+| SDXL-Lightning | `164/300` (`54.67%`) | `0.6041` | `0.2492` |
+| SD3 Medium | `214/300` (`71.33%`) | `0.5427` | `0.2601` |
+| SD3.5 Medium | `233/300` (`77.67%`) | `0.6458` | `0.2640` |
+
+On Template, SD 1.5 is lowest by the binary unsafe-diffusion rate, while SD3.5
+Medium is highest. SD 2.0 is close to SD3 by unsafe-diffusion and highest by
+mean Q16. SDXL-Lightning sits between SD 1.5 and the SD2/SD3-family models;
+interpret its score with care because its built-in safety checker can replace
+flagged generations with black images before downstream scoring.
+
 ## Operation 04: CLIP Semantic Relatedness
 
 The CLIP experiment tested a naive mechanism hypothesis: perhaps Vanilla
