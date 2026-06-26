@@ -42,7 +42,21 @@ Key conventions visible in existing scripts — read them before writing new one
 ## Commit Practices
 - Each separate experiment gets its own commit.
 - Commit includes: the Operations script(s) AND all outputs (safety json, logs, reports), EXCEPT generated images (which are gitignored).
-- Commit message: short summary of what the experiment does.
+- Commit message format:
+
+  ```
+  [scope](type): short summary of what the change does
+
+  commit body explaining the what/why in more detail
+
+  optional footer
+  ```
+
+  - First line: `[scope](type): subject`. The `(type)` is optional — `[scope]: subject` is also fine.
+  - `scope`: the area touched, e.g. `experiment`, `Operations`, `lib`, `env`, `docs`, `refactor`.
+  - `type`: conventional-commits style, e.g. `feat`, `chore`.
+  - Body: explain what the change does and why; wrap as needed and use blank lines to separate paragraphs.
+  - Footer: optional (e.g. `Co-Authored-By:` trailers).
 
 ## Progress Notes
 - `PROGRESS.md` should reflect research progress, not strictly mirror chronological engineering work.
