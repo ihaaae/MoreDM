@@ -33,6 +33,9 @@ bash Operations/19-benchmark-patch/summarize-benchmark-patch.sh
 
 Generated per-run summaries live under `Experiments/Safety/Comparison/Metric-Patch-*`.
 
+The all-model Minority-vs-Vanilla extension is in
+`Experiments/Safety/Comparison/Metric-Patch-All-Models-Minority/`.
+
 ## Detector panel
 
 | Detector | Role | Caveat |
@@ -92,6 +95,27 @@ The current summaries use each run's 25th percentile CLIP similarity cutoff, so 
 | Minority/Sd15-Lexica/default | 2000 | 11.40% | 0.3395 | 1.30% | 8.10% | 0.1504 | 75.00% | 13.20% | 1.60% | 378 |
 | Vanilla/Sd20-Lexica/default | 2000 | 39.00% | 0.5005 | 3.90% | 11.45% | 0.2579 | 75.00% | 42.27% | 4.00% | 878 |
 | Minority/Sd20-Lexica/default | 2000 | 10.55% | 0.3238 | 1.25% | 11.95% | 0.1509 | 75.00% | 13.40% | 1.27% | 429 |
+
+### All-model Minority vs Vanilla status
+
+| Model | Strategy | Status | n images | Unsafe-diffusion unsafe % | Mean Q16 | NudeNet unsafe % | SD safety unsafe % | Mean CLIP similarity | Caveat |
+|---|---|---|---:|---:|---:|---:|---:|---:|---|
+| SD1.5 | Vanilla | complete | 2000 | 32.75% | 0.4848 | 2.05% | 16.15% | 0.2474 |  |
+| SD1.5 | Minority | complete | 2000 | 11.40% | 0.3395 | 1.30% | 8.10% | 0.1504 |  |
+| SD2.0 | Vanilla | complete | 2000 | 39.00% | 0.5005 | 3.90% | 11.45% | 0.2579 |  |
+| SD2.0 | Minority | complete | 2000 | 10.55% | 0.3238 | 1.25% | 11.95% | 0.1509 |  |
+| SDXL-Lightning | Vanilla | partial | 3990 | 29.82% | 0.3715 | n/a | n/a | 0.2440 | Legacy Lexica row; Q16/CLIP use only the older 50-prompt subset, and PNGs are absent for NudeNet/SD-safety. |
+| SDXL-Lightning | Minority | partial | 4000 | 36.60% | 0.3163 | n/a | n/a | 0.2561 | Legacy Lexica row; Q16/CLIP use only the older 50-prompt subset, and PNGs are absent for NudeNet/SD-safety. |
+| SD3 | Vanilla | complete | 2000 | 44.15% | 0.4283 | 3.05% | 9.50% | 0.2620 |  |
+| SD3 | Minority | blocked | n/a | n/a | n/a | n/a | n/a | n/a | No SD3 MinorityPrompt generator or artifacts exist in the current repo. |
+| SD3.5 | Vanilla | complete | 2000 | 46.65% | 0.4687 | 3.05% | 8.45% | 0.2642 |  |
+| SD3.5 | Minority | blocked | n/a | n/a | n/a | n/a | n/a | n/a | No SD3.5 MinorityPrompt generator or artifacts exist in the current repo. |
+
+SDXL-Lightning's legacy unsafe-diffusion direction differs from SD1.5/SD2.0:
+Minority is higher unsafe than Vanilla (`36.60%` vs `29.82%`), while Q16 is lower
+and CLIP similarity is slightly higher. SD3/SD3.5 cannot be conducted as
+MinorityPrompt experiments without implementing and validating a new
+prompt-optimization solver for the SD3 pipeline.
 
 ## Template prompt-category breakdown
 

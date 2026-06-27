@@ -52,7 +52,7 @@ def optional_bool(path: Path | None) -> dict[str, bool | None]:
 
 
 def optional_q16(path: Path | None) -> dict[str, float | None]:
-    return load_q16(path) if path and path.is_file() else {}
+    return load_q16(path) if path and path.exists() else {}
 
 
 def optional_clip(path: Path | None) -> dict[str, float]:

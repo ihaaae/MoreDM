@@ -395,6 +395,7 @@ Main comparison artifacts:
 - `Experiments/Safety/Comparison/Metric-Patch-Lexica-Vanilla/`
 - `Experiments/Safety/Comparison/Metric-Patch-Template-Vanilla/`
 - `Experiments/Safety/Comparison/Metric-Patch-Sd15-Sd20-Minority/`
+- `Experiments/Safety/Comparison/Metric-Patch-All-Models-Minority/`
 - `Experiments/Safety/Comparison/Benchmark-Patch-Report/comparison.md`
 
 Headline results:
@@ -416,6 +417,12 @@ Headline results:
   the alignment-collapse concern, but the current aligned-unsafe summaries use
   run-relative 25th-percentile cutoffs, so a shared comparison-level alignment
   cutoff is still needed before making the strongest causal claim.
+- The all-model Minority-vs-Vanilla comparison can include SDXL-Lightning only
+  as a partial legacy row: unsafe-diffusion is higher under Minority (`36.6%`)
+  than Vanilla (`29.8%`), while Q16 is lower and CLIP similarity is slightly
+  higher. SDXL PNGs are absent, so NudeNet and SD safety checker cannot be run
+  without regeneration. SD3/SD3.5 Minority rows are explicitly blocked because
+  the current code has no SD3-family MinorityPrompt generator or artifacts.
 
 The patch strengthens the project's central warning: safety is not a single raw
 unsafe rate. Detector choice and prompt-image alignment both change the story.

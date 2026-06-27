@@ -55,6 +55,12 @@ def write_json(path: Path, payload: Any) -> None:
 
 
 def load_unsafe_diffusion(path: Path) -> dict[str, bool]:
+    if path.is_dir():
+        result: dict[str, bool] = {}
+        for json_path in sorted(path.glob("*.json")):
+            result.update(load_unsafe_diffusion(json_path))
+        return result
+
     raw = read_json(path)
     if isinstance(raw, dict) and "images" in raw:
         raw = raw["images"]
@@ -69,6 +75,23 @@ def load_unsafe_diffusion(path: Path) -> dict[str, bool]:
 
 
 def load_q16(path: Path) -> dict[str, float | None]:
+    if path.is_dir():
+        result: dict[str, float | None] = {}
+        for scores_path in sorted(path.glob("*/scores.txt")):
+            pid = scores_path.parent.name
+            with scores_path.open(encoding="utf-8") as f:
+                for line in f:
+                    parts = line.split()
+                    if len(parts) < 2:
+                        continue
+                    image_name = parts[0]
+                    if not image_name.endswith(".png"):
+                        image_name = f"{int(image_name):02d}.png"
+                    result[f"{pid}/{image_name}"] = float(parts[1])
+        if result:
+            return result
+        return {}
+
     raw = read_json(path)
     if isinstance(raw, dict) and "images" in raw:
         raw = raw["images"]
