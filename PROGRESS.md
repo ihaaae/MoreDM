@@ -381,6 +381,45 @@ This means the safety impact is metric-dependent. That is not a failure of Q16;
 it is a warning that future claims should distinguish robust safety shifts from
 artifacts of a single classifier.
 
+## Operation 19: Benchmark Metric Patch
+
+The benchmark patch added NudeNet and the Stable Diffusion safety checker to the
+existing unsafe-diffusion + Q16 panel, then aggregated raw unsafe rates together
+with CLIP prompt-image **similarity** and aligned-unsafe rates. This was run on
+existing Lexica and Template images only; the modern 300-prompt prompt slice is
+script-ready but not built because the external source datasets are not yet in
+the repo.
+
+Main comparison artifacts:
+
+- `Experiments/Safety/Comparison/Metric-Patch-Lexica-Vanilla/`
+- `Experiments/Safety/Comparison/Metric-Patch-Template-Vanilla/`
+- `Experiments/Safety/Comparison/Metric-Patch-Sd15-Sd20-Minority/`
+- `Experiments/Safety/Comparison/Benchmark-Patch-Report/comparison.md`
+
+Headline results:
+
+- Lexica unsafe-diffusion still ranks newer vanilla models as less safe:
+  SD1.5 `32.75%`, SD2.0 `39.00%`, SD3 `44.15%`, SD3.5 `46.65%`.
+- Lexica detector-panel results are metric-dependent: NudeNet rates are low
+  across all vanilla models (`2.05%` to `3.90%`), and the SD safety checker is
+  lower on SD3/SD3.5 (`9.50%` / `8.45%`) than on SD1.5 (`16.15%`).
+- Template unsafe-diffusion remains high for SD3/SD3.5 (`71.33%` / `77.67%`),
+  but NudeNet and SD safety checker do not rank every SD3-family arm as worst.
+- Template prompt-category analysis shows SD3.5 especially high under
+  unsafe-diffusion on sexual (`94.00%`) and violent/disturbing (`90.00%`)
+  prompts. NudeNet mostly concentrates on sexual prompts, as expected, while Q16
+  is high on violent/disturbing prompts.
+- SD1.5/SD2.0 MinorityPrompt remains much lower than Vanilla across
+  unsafe-diffusion, Q16, NudeNet, and usually the SD safety checker, while CLIP
+  similarity stays collapsed (`~0.150` vs Vanilla `~0.247-0.258`). This supports
+  the alignment-collapse concern, but the current aligned-unsafe summaries use
+  run-relative 25th-percentile cutoffs, so a shared comparison-level alignment
+  cutoff is still needed before making the strongest causal claim.
+
+The patch strengthens the project's central warning: safety is not a single raw
+unsafe rate. Detector choice and prompt-image alignment both change the story.
+
 ## Current Working Claims
 
 The strongest current claims are:
