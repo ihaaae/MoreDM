@@ -2,7 +2,7 @@
 
 Safety is not a single raw unsafe rate. It depends on prompt fidelity, unsafe-content realization, and the mechanism by which unsafe content is suppressed or lost.
 
-This report summarizes the targeted detector/alignment patch run on existing Lexica and Template images. It does **not** include the new 300-prompt modern slice, because those external prompt-source files are not yet present locally.
+This report summarizes the targeted detector/alignment patch run on existing Lexica and Template images, plus regenerated SDXL-Lightning Lexica Vanilla/Minority runs needed to complete NudeNet and SD-safety scoring. It does **not** include the new 300-prompt modern slice, because those external prompt-source files are not yet present locally.
 
 ## Research question
 
@@ -49,7 +49,7 @@ The all-model Minority-vs-Vanilla extension is in
 
 This run used existing images only:
 
-- Lexica: vanilla SD1.5, SD2.0, SD3, SD3.5; Minority SD1.5, SD2.0.
+- Lexica: vanilla SD1.5, SD2.0, SD3, SD3.5; Minority SD1.5, SD2.0; regenerated SDXL-Lightning Vanilla/Minority for the full detector panel.
 - Template: vanilla SD1.5, SD2.0, SDXL-Lightning, SD3, SD3.5.
 
 The modern 300-prompt benchmark slice remains script-ready but unbuilt until local I2P / T2I-RiskyPrompt / P4D / benign-control inputs are provided.
@@ -104,18 +104,19 @@ The current summaries use each run's 25th percentile CLIP similarity cutoff, so 
 | SD1.5 | Minority | complete | 2000 | 11.40% | 0.3395 | 1.30% | 8.10% | 0.1504 |  |
 | SD2.0 | Vanilla | complete | 2000 | 39.00% | 0.5005 | 3.90% | 11.45% | 0.2579 |  |
 | SD2.0 | Minority | complete | 2000 | 10.55% | 0.3238 | 1.25% | 11.95% | 0.1509 |  |
-| SDXL-Lightning | Vanilla | partial | 3990 | 29.82% | 0.3715 | n/a | n/a | 0.2440 | Legacy Lexica row; Q16/CLIP use only the older 50-prompt subset, and PNGs are absent for NudeNet/SD-safety. |
-| SDXL-Lightning | Minority | partial | 4000 | 36.60% | 0.3163 | n/a | n/a | 0.2561 | Legacy Lexica row; Q16/CLIP use only the older 50-prompt subset, and PNGs are absent for NudeNet/SD-safety. |
+| SDXL-Lightning | Vanilla | complete-regenerated | 2000 | 28.55% | 0.4189 | 3.80% | 4.15% | 0.2428 | Regenerated Lexica row because original historical PNGs were absent. |
+| SDXL-Lightning | Minority | complete-regenerated | 2000 | 37.20% | 0.3480 | 4.15% | 6.65% | 0.2543 | Regenerated Lexica row because original historical PNGs were absent. |
 | SD3 | Vanilla | complete | 2000 | 44.15% | 0.4283 | 3.05% | 9.50% | 0.2620 |  |
 | SD3 | Minority | blocked | n/a | n/a | n/a | n/a | n/a | n/a | No SD3 MinorityPrompt generator or artifacts exist in the current repo. |
 | SD3.5 | Vanilla | complete | 2000 | 46.65% | 0.4687 | 3.05% | 8.45% | 0.2642 |  |
 | SD3.5 | Minority | blocked | n/a | n/a | n/a | n/a | n/a | n/a | No SD3.5 MinorityPrompt generator or artifacts exist in the current repo. |
 
-SDXL-Lightning's legacy unsafe-diffusion direction differs from SD1.5/SD2.0:
-Minority is higher unsafe than Vanilla (`36.60%` vs `29.82%`), while Q16 is lower
-and CLIP similarity is slightly higher. SD3/SD3.5 cannot be conducted as
-MinorityPrompt experiments without implementing and validating a new
-prompt-optimization solver for the SD3 pipeline.
+SDXL-Lightning's regenerated full-panel direction differs from SD1.5/SD2.0:
+Minority is higher unsafe than Vanilla under unsafe-diffusion (`37.20%` vs
+`28.55%`), NudeNet (`4.15%` vs `3.80%`), and SD safety checker (`6.65%` vs
+`4.15%`), while Q16 is lower and CLIP similarity is slightly higher. SD3/SD3.5
+cannot be conducted as MinorityPrompt experiments without implementing and
+validating a new prompt-optimization solver for the SD3 pipeline.
 
 ## Template prompt-category breakdown
 
@@ -207,6 +208,7 @@ The high-alignment unsafe examples listed above are the initial red-team candida
 - CLIP similarity is a proxy for prompt fidelity, not a complete semantic-fidelity measure.
 - Prompt-source labels, especially I2P labels in the future prompt slice, should be treated as approximate.
 - Current aligned-unsafe reports use run-relative 25th percentile cutoffs. Shared comparison-level cutoffs are needed for stronger cross-model/strategy alignment claims.
+- The SDXL-Lightning Lexica rows are regenerated rather than the original historical run, because the historical PNGs were absent and could not be scored by image-only detectors.
 
 ## Next steps
 

@@ -386,9 +386,10 @@ artifacts of a single classifier.
 The benchmark patch added NudeNet and the Stable Diffusion safety checker to the
 existing unsafe-diffusion + Q16 panel, then aggregated raw unsafe rates together
 with CLIP prompt-image **similarity** and aligned-unsafe rates. This was run on
-existing Lexica and Template images only; the modern 300-prompt prompt slice is
-script-ready but not built because the external source datasets are not yet in
-the repo.
+existing Lexica and Template images, plus regenerated SDXL-Lightning Lexica
+Vanilla/Minority images needed for image-only NudeNet and SD-safety scoring. The
+modern 300-prompt prompt slice is script-ready but not built because the
+external source datasets are not yet in the repo.
 
 Main comparison artifacts:
 
@@ -417,12 +418,14 @@ Headline results:
   the alignment-collapse concern, but the current aligned-unsafe summaries use
   run-relative 25th-percentile cutoffs, so a shared comparison-level alignment
   cutoff is still needed before making the strongest causal claim.
-- The all-model Minority-vs-Vanilla comparison can include SDXL-Lightning only
-  as a partial legacy row: unsafe-diffusion is higher under Minority (`36.6%`)
-  than Vanilla (`29.8%`), while Q16 is lower and CLIP similarity is slightly
-  higher. SDXL PNGs are absent, so NudeNet and SD safety checker cannot be run
-  without regeneration. SD3/SD3.5 Minority rows are explicitly blocked because
-  the current code has no SD3-family MinorityPrompt generator or artifacts.
+- Regenerated SDXL-Lightning Lexica completes the detector panel for
+  Minority-vs-Vanilla: Minority is higher than Vanilla under unsafe-diffusion
+  (`37.20%` vs `28.55%`), NudeNet (`4.15%` vs `3.80%`), and the SD safety
+  checker (`6.65%` vs `4.15%`), while Q16 is lower (`0.3480` vs `0.4189`) and
+  CLIP similarity is slightly higher (`0.2543` vs `0.2428`). This differs from
+  the SD1.5/SD2.0 Minority safening pattern. SD3/SD3.5 Minority rows are
+  explicitly blocked because the current code has no SD3-family MinorityPrompt
+  generator or artifacts.
 
 The patch strengthens the project's central warning: safety is not a single raw
 unsafe rate. Detector choice and prompt-image alignment both change the story.
@@ -440,8 +443,8 @@ The strongest current claims are:
 5. Safety conclusions depend on the metric, so binary classifier results should
    be checked against secondary metrics where possible.
 6. The SD 1.x/2.x Lexica run shows MinorityPrompt reducing measured unsafe
-   rates relative to Vanilla, unlike the earlier SDXL-Lightning
-   unsafe-diffusion direction.
+   rates relative to Vanilla, while regenerated SDXL-Lightning shows the
+   opposite direction for unsafe-diffusion, NudeNet, and the SD safety checker.
 7. Vanilla SD3 / SD3.5 do not reduce the unsafe-diffusion rate on Lexica
    relative to vanilla SD 1.5 / SD 2.0, though Q16 ranks the models differently.
 8. SD3.5 Medium is modestly less safe than SD3 Medium on Lexica by both
