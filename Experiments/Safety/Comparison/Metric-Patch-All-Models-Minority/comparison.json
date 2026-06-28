@@ -2,7 +2,7 @@
   "metadata": {
     "created_by": "ad hoc all-model minority comparison",
     "scope": "Lexica Minority vs Vanilla across available model families",
-    "caveat": "SDXL now uses regenerated full-panel Lexica runs; SD3/SD3.5 MinorityPrompt remains blocked by missing generator/artifacts."
+    "caveat": "SDXL uses regenerated full-panel Lexica runs; SD3/SD3.5 MinorityPrompt generator support is merged and smoke-tested, but full SD3-family Minority experiments are not yet run."
   },
   "runs": [
     {
@@ -114,8 +114,8 @@
       "sd_safety_unsafe_rate": null,
       "clip_mean_similarity": null,
       "unsafe_diffusion_aligned_unsafe_rate": null,
-      "status": "blocked",
-      "caveat": "No SD3/SD3.5 MinorityPrompt generator exists in lib/gen.py, and no Minority artifacts exist under Experiments/Safety. Implementing this requires a new SD3-flow prompt-optimization solver, not just running existing scripts."
+      "status": "not-run",
+      "caveat": "SD3-family MinorityPrompt generator support is now merged and one-image smoke-tested, but full Lexica Minority artifacts have not been generated or scored yet."
     },
     {
       "model": "SD3.5",
@@ -142,8 +142,8 @@
       "sd_safety_unsafe_rate": null,
       "clip_mean_similarity": null,
       "unsafe_diffusion_aligned_unsafe_rate": null,
-      "status": "blocked",
-      "caveat": "No SD3/SD3.5 MinorityPrompt generator exists in lib/gen.py, and no Minority artifacts exist under Experiments/Safety. Implementing this requires a new SD3-flow prompt-optimization solver, not just running existing scripts."
+      "status": "not-run",
+      "caveat": "SD3-family MinorityPrompt generator support is now merged and one-image smoke-tested, but full Lexica Minority artifacts have not been generated or scored yet."
     }
   ]
 }

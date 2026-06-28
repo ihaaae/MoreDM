@@ -423,9 +423,9 @@ Headline results:
   (`37.20%` vs `28.55%`), NudeNet (`4.15%` vs `3.80%`), and the SD safety
   checker (`6.65%` vs `4.15%`), while Q16 is lower (`0.3480` vs `0.4189`) and
   CLIP similarity is slightly higher (`0.2543` vs `0.2428`). This differs from
-  the SD1.5/SD2.0 Minority safening pattern. SD3/SD3.5 Minority rows are
-  explicitly blocked because the current code has no SD3-family MinorityPrompt
-  generator or artifacts.
+  the SD1.5/SD2.0 Minority safening pattern. SD3/SD3.5 Minority generation
+  support is now merged and one-image smoke-tested, but full Minority artifacts
+  still need generation and detector scoring.
 
 The patch strengthens the project's central warning: safety is not a single raw
 unsafe rate. Detector choice and prompt-image alignment both change the story.
@@ -462,7 +462,8 @@ robust:
 - use more images per prompt and repeated reruns for paper-stage special prompts
 - investigate why the SD 1.x/2.x paired Lexica runs reduce measured unsafety
   while the earlier SDXL-Lightning unsafe-diffusion run increased it
-- decide whether SD3-family MinorityPrompt support is methodologically worth
-  implementing, since the current SD3 / SD3.5 evidence is vanilla-only
+- run and score the now smoke-tested SD3-family MinorityPrompt support if it
+  is methodologically worth including, since the current SD3 / SD3.5 evidence is
+  still vanilla-only at full scale
 - avoid treating operation-folder cleanup as research progress unless it changes
   the experimental evidence

@@ -107,16 +107,16 @@ The current summaries use each run's 25th percentile CLIP similarity cutoff, so 
 | SDXL-Lightning | Vanilla | complete-regenerated | 2000 | 28.55% | 0.4189 | 3.80% | 4.15% | 0.2428 | Regenerated Lexica row because original historical PNGs were absent. |
 | SDXL-Lightning | Minority | complete-regenerated | 2000 | 37.20% | 0.3480 | 4.15% | 6.65% | 0.2543 | Regenerated Lexica row because original historical PNGs were absent. |
 | SD3 | Vanilla | complete | 2000 | 44.15% | 0.4283 | 3.05% | 9.50% | 0.2620 |  |
-| SD3 | Minority | blocked | n/a | n/a | n/a | n/a | n/a | n/a | No SD3 MinorityPrompt generator or artifacts exist in the current repo. |
+| SD3 | Minority | not-run | n/a | n/a | n/a | n/a | n/a | n/a | SD3-family MinorityPrompt generator support is merged and one-image smoke-tested; full artifacts are not yet generated/scored. |
 | SD3.5 | Vanilla | complete | 2000 | 46.65% | 0.4687 | 3.05% | 8.45% | 0.2642 |  |
-| SD3.5 | Minority | blocked | n/a | n/a | n/a | n/a | n/a | n/a | No SD3.5 MinorityPrompt generator or artifacts exist in the current repo. |
+| SD3.5 | Minority | not-run | n/a | n/a | n/a | n/a | n/a | n/a | SD3-family MinorityPrompt generator support is merged and one-image smoke-tested; full artifacts are not yet generated/scored. |
 
 SDXL-Lightning's regenerated full-panel direction differs from SD1.5/SD2.0:
 Minority is higher unsafe than Vanilla under unsafe-diffusion (`37.20%` vs
 `28.55%`), NudeNet (`4.15%` vs `3.80%`), and SD safety checker (`6.65%` vs
 `4.15%`), while Q16 is lower and CLIP similarity is slightly higher. SD3/SD3.5
-cannot be conducted as MinorityPrompt experiments without implementing and
-validating a new prompt-optimization solver for the SD3 pipeline.
+MinorityPrompt generation support is now merged and one-image smoke-tested, but
+full Minority artifacts still need generation and detector scoring.
 
 ## Template prompt-category breakdown
 
@@ -209,6 +209,7 @@ The high-alignment unsafe examples listed above are the initial red-team candida
 - Prompt-source labels, especially I2P labels in the future prompt slice, should be treated as approximate.
 - Current aligned-unsafe reports use run-relative 25th percentile cutoffs. Shared comparison-level cutoffs are needed for stronger cross-model/strategy alignment claims.
 - The SDXL-Lightning Lexica rows are regenerated rather than the original historical run, because the historical PNGs were absent and could not be scored by image-only detectors.
+- SD3/SD3.5 Minority rows remain not-run experiment rows, not negative results; only one-image generation smoke tests have been completed.
 
 ## Next steps
 
