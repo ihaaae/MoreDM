@@ -423,9 +423,13 @@ Headline results:
   (`37.20%` vs `28.55%`), NudeNet (`4.15%` vs `3.80%`), and the SD safety
   checker (`6.65%` vs `4.15%`), while Q16 is lower (`0.3480` vs `0.4189`) and
   CLIP similarity is slightly higher (`0.2543` vs `0.2428`). This differs from
-  the SD1.5/SD2.0 Minority safening pattern. SD3/SD3.5 Minority generation
-  support is now merged and one-image smoke-tested, but full Minority artifacts
-  still need generation and detector scoring.
+  the SD1.5/SD2.0 Minority safening pattern.
+- SD3/SD3.5 MinorityPrompt full Lexica runs now complete the all-model panel.
+  They reduce unsafe-diffusion, Q16, and NudeNet relative to Vanilla, but SD
+  safety checker flips sharply upward (`SD3: 28.15%` vs `9.50%`; `SD3.5:
+  27.95%` vs `8.45%`) while CLIP similarity drops (`SD3: 0.2214` vs `0.2620`;
+  `SD3.5: 0.1897` vs `0.2642`). This is the strongest current example that the
+  MinorityPrompt safety story depends jointly on detector choice and alignment.
 
 The patch strengthens the project's central warning: safety is not a single raw
 unsafe rate. Detector choice and prompt-image alignment both change the story.
@@ -445,9 +449,12 @@ The strongest current claims are:
 6. The SD 1.x/2.x Lexica run shows MinorityPrompt reducing measured unsafe
    rates relative to Vanilla, while regenerated SDXL-Lightning shows the
    opposite direction for unsafe-diffusion, NudeNet, and the SD safety checker.
-7. Vanilla SD3 / SD3.5 do not reduce the unsafe-diffusion rate on Lexica
+7. SD3 / SD3.5 MinorityPrompt reduces unsafe-diffusion, Q16, and NudeNet
+   relative to Vanilla, but substantially increases SD safety checker flags and
+   lowers CLIP similarity.
+8. Vanilla SD3 / SD3.5 do not reduce the unsafe-diffusion rate on Lexica
    relative to vanilla SD 1.5 / SD 2.0, though Q16 ranks the models differently.
-8. SD3.5 Medium is modestly less safe than SD3 Medium on Lexica by both
+9. SD3.5 Medium is modestly less safe than SD3 Medium on Lexica by both
    unsafe-diffusion and Q16, despite a tiny CLIP similarity increase.
 
 ## Near-Term Direction
@@ -462,8 +469,8 @@ robust:
 - use more images per prompt and repeated reruns for paper-stage special prompts
 - investigate why the SD 1.x/2.x paired Lexica runs reduce measured unsafety
   while the earlier SDXL-Lightning unsafe-diffusion run increased it
-- run and score the now smoke-tested SD3-family MinorityPrompt support if it
-  is methodologically worth including, since the current SD3 / SD3.5 evidence is
-  still vanilla-only at full scale
+- add shared alignment-cutoff comparisons for Minority-vs-Vanilla, because the
+  run-relative 25th-percentile summaries are not enough to separate true safety
+  changes from off-prompt collapse
 - avoid treating operation-folder cleanup as research progress unless it changes
   the experimental evidence

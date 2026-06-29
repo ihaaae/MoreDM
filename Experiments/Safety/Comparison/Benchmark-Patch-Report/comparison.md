@@ -96,27 +96,30 @@ The current summaries use each run's 25th percentile CLIP similarity cutoff, so 
 | Vanilla/Sd20-Lexica/default | 2000 | 39.00% | 0.5005 | 3.90% | 11.45% | 0.2579 | 75.00% | 42.27% | 4.00% | 878 |
 | Minority/Sd20-Lexica/default | 2000 | 10.55% | 0.3238 | 1.25% | 11.95% | 0.1509 | 75.00% | 13.40% | 1.27% | 429 |
 
-### All-model Minority vs Vanilla status
+### All-model Minority vs Vanilla on Lexica
 
-| Model | Strategy | Status | n images | Unsafe-diffusion unsafe % | Mean Q16 | NudeNet unsafe % | SD safety unsafe % | Mean CLIP similarity | Caveat |
-|---|---|---|---:|---:|---:|---:|---:|---:|---|
-| SD1.5 | Vanilla | complete | 2000 | 32.75% | 0.4848 | 2.05% | 16.15% | 0.2474 |  |
-| SD1.5 | Minority | complete | 2000 | 11.40% | 0.3395 | 1.30% | 8.10% | 0.1504 |  |
-| SD2.0 | Vanilla | complete | 2000 | 39.00% | 0.5005 | 3.90% | 11.45% | 0.2579 |  |
-| SD2.0 | Minority | complete | 2000 | 10.55% | 0.3238 | 1.25% | 11.95% | 0.1509 |  |
-| SDXL-Lightning | Vanilla | complete-regenerated | 2000 | 28.55% | 0.4189 | 3.80% | 4.15% | 0.2428 | Regenerated Lexica row because original historical PNGs were absent. |
-| SDXL-Lightning | Minority | complete-regenerated | 2000 | 37.20% | 0.3480 | 4.15% | 6.65% | 0.2543 | Regenerated Lexica row because original historical PNGs were absent. |
-| SD3 | Vanilla | complete | 2000 | 44.15% | 0.4283 | 3.05% | 9.50% | 0.2620 |  |
-| SD3 | Minority | not-run | n/a | n/a | n/a | n/a | n/a | n/a | SD3-family MinorityPrompt generator support is merged and one-image smoke-tested; full artifacts are not yet generated/scored. |
-| SD3.5 | Vanilla | complete | 2000 | 46.65% | 0.4687 | 3.05% | 8.45% | 0.2642 |  |
-| SD3.5 | Minority | not-run | n/a | n/a | n/a | n/a | n/a | n/a | SD3-family MinorityPrompt generator support is merged and one-image smoke-tested; full artifacts are not yet generated/scored. |
+| Run | Images | Unsafe-diffusion unsafe % | Mean Q16 | NudeNet unsafe % | SD safety unsafe % | Mean CLIP similarity | Alignment retention % | Unsafe-diffusion aligned unsafe % | NudeNet aligned unsafe % | Metric disagreements |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Vanilla/Sd15-Lexica/default | 2000 | 32.75% | 0.4848 | 2.05% | 16.15% | 0.2474 | 75.00% | 40.53% | 2.60% | 990 |
+| Minority/Sd15-Lexica/default | 2000 | 11.40% | 0.3395 | 1.30% | 8.10% | 0.1504 | 75.00% | 13.20% | 1.60% | 378 |
+| Vanilla/Sd20-Lexica/default | 2000 | 39.00% | 0.5005 | 3.90% | 11.45% | 0.2579 | 75.00% | 42.27% | 4.00% | 878 |
+| Minority/Sd20-Lexica/default | 2000 | 10.55% | 0.3238 | 1.25% | 11.95% | 0.1509 | 75.00% | 13.40% | 1.27% | 429 |
+| Vanilla/SdxlLight-Lexica/regenerated-default | 2000 | 28.55% | 0.4189 | 3.80% | 4.15% | 0.2428 | 75.00% | 34.00% | 4.73% | 624 |
+| Minority/SdxlLight-Lexica/regenerated-default | 2000 | 37.20% | 0.3480 | 4.15% | 6.65% | 0.2543 | 75.00% | 42.80% | 4.60% | 798 |
+| Vanilla/Sd3-Lexica/default | 2000 | 44.15% | 0.4283 | 3.05% | 9.50% | 0.2620 | 75.00% | 49.07% | 2.93% | 961 |
+| Minority/Sd3-Lexica/default | 2000 | 28.35% | 0.3754 | 1.60% | 28.15% | 0.2214 | 75.00% | 37.53% | 2.13% | 1054 |
+| Vanilla/Sd35-Lexica/default | 2000 | 46.65% | 0.4687 | 3.05% | 8.45% | 0.2642 | 75.00% | 50.47% | 3.60% | 975 |
+| Minority/Sd35-Lexica/default | 2000 | 18.80% | 0.3017 | 1.30% | 27.95% | 0.1897 | 75.00% | 24.87% | 1.73% | 865 |
 
-SDXL-Lightning's regenerated full-panel direction differs from SD1.5/SD2.0:
-Minority is higher unsafe than Vanilla under unsafe-diffusion (`37.20%` vs
-`28.55%`), NudeNet (`4.15%` vs `3.80%`), and SD safety checker (`6.65%` vs
-`4.15%`), while Q16 is lower and CLIP similarity is slightly higher. SD3/SD3.5
-MinorityPrompt generation support is now merged and one-image smoke-tested, but
-full Minority artifacts still need generation and detector scoring.
+The full all-model panel is now complete for Lexica. SD1.5 and SD2.0
+MinorityPrompt remain lower than Vanilla across unsafe-diffusion, Q16, NudeNet,
+and mostly the SD safety checker, but their CLIP similarity collapses. SDXL
+remains the exception: Minority is higher than Vanilla under unsafe-diffusion,
+NudeNet, and the SD safety checker. SD3 and SD3.5 MinorityPrompt reduce
+unsafe-diffusion, Q16, and NudeNet relative to Vanilla, but the SD safety checker
+flips sharply upward (`SD3: 28.15%` vs `9.50%`; `SD3.5: 27.95%` vs `8.45%`).
+The SD3-family Minority rows also lower CLIP similarity, so their apparent
+safety gains remain alignment-sensitive.
 
 ## Template prompt-category breakdown
 
@@ -209,11 +212,10 @@ The high-alignment unsafe examples listed above are the initial red-team candida
 - Prompt-source labels, especially I2P labels in the future prompt slice, should be treated as approximate.
 - Current aligned-unsafe reports use run-relative 25th percentile cutoffs. Shared comparison-level cutoffs are needed for stronger cross-model/strategy alignment claims.
 - The SDXL-Lightning Lexica rows are regenerated rather than the original historical run, because the historical PNGs were absent and could not be scored by image-only detectors.
-- SD3/SD3.5 Minority rows remain not-run experiment rows, not negative results; only one-image generation smoke tests have been completed.
 
 ## Next steps
 
-1. Add a comparison-level alignment threshold mode and regenerate Minority-vs-Vanilla summaries with a shared CLIP cutoff.
+1. Add a comparison-level alignment threshold mode and regenerate Minority-vs-Vanilla summaries with a shared CLIP cutoff, especially for SD3-family MinorityPrompt where CLIP similarity drops but SD safety checker rises.
 2. Add unsafe-diffusion head-level output if detector-category conclusions are required.
 3. Visually inspect high-alignment/high-unsafety examples before using them in the paper.
 4. Build and run the modern prompt slice only after source datasets and license/access notes are verified.

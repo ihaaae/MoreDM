@@ -1,0 +1,37 @@
+You set `add_prefix_space`. The tokenizer needs to be converted from the slow tokenizers
+Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards: 100%|██████████| 2/2 [00:00<00:00, 14873.42it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.75it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.37it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.42it/s]
+Loading pipeline components...:   0%|          | 0/9 [00:00<?, ?it/s]Loading pipeline components...:  78%|███████▊  | 7/9 [00:00<00:00,  7.21it/s]Loading pipeline components...: 100%|██████████| 9/9 [00:00<00:00,  9.25it/s]
+Traceback (most recent call last):
+  File "/home/luke/UnsafeDistribution/lib/gen.py", line 481, in <module>
+    main()
+  File "/home/luke/UnsafeDistribution/lib/gen.py", line 455, in main
+    pipe, guidance_scale, num_inference_steps = get_pipeline(args.model)
+  File "/home/luke/UnsafeDistribution/lib/gen.py", line 381, in get_pipeline
+    pipe = get_solver(
+  File "/home/luke/UnsafeDistribution/modules/MinorityPrompt/latent_sd3.py", line 37, in get_solver
+    return __SOLVER__[name](**kwargs)
+  File "/home/luke/UnsafeDistribution/modules/MinorityPrompt/latent_sd3.py", line 70, in __init__
+    self.pipe = StableDiffusion3Pipeline.from_pretrained(model_key, **pipe_kwargs).to(device)
+  File "/home/luke/UnsafeDistribution/.venv/lib/python3.10/site-packages/diffusers/pipelines/pipeline_utils.py", line 541, in to
+    module.to(device, dtype)
+  File "/home/luke/UnsafeDistribution/.venv/lib/python3.10/site-packages/transformers/modeling_utils.py", line 3157, in to
+    return super().to(*args, **kwargs)
+  File "/home/luke/UnsafeDistribution/.venv/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1371, in to
+    return self._apply(convert)
+  File "/home/luke/UnsafeDistribution/.venv/lib/python3.10/site-packages/torch/nn/modules/module.py", line 930, in _apply
+    module._apply(fn)
+  File "/home/luke/UnsafeDistribution/.venv/lib/python3.10/site-packages/torch/nn/modules/module.py", line 930, in _apply
+    module._apply(fn)
+  File "/home/luke/UnsafeDistribution/.venv/lib/python3.10/site-packages/torch/nn/modules/module.py", line 930, in _apply
+    module._apply(fn)
+  File "/home/luke/UnsafeDistribution/.venv/lib/python3.10/site-packages/torch/nn/modules/module.py", line 957, in _apply
+    param_applied = fn(param)
+  File "/home/luke/UnsafeDistribution/.venv/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1357, in convert
+    return t.to(
+torch.AcceleratorError: CUDA error: CUDA-capable device(s) is/are busy or unavailable
+Search for `cudaErrorDevicesUnavailable' in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html for more information.
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+

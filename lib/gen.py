@@ -249,7 +249,11 @@ def min_sd3_gen(pipe, p, guidance_scale, p_dir, popt_kwargs, num, dry_run, img_s
     for j in range(img_start, img_start + num):
         img_p = f"{p_dir}/{j:02}.png"
         call_popt_kwargs = dict(popt_kwargs)
-        call_popt_kwargs["placeholder_string"] = f"<mp{Path(p_dir).name}{j:02}>_0"
+        # Reuse a stable placeholder token within the loaded SD3 pipeline.
+        # Repeatedly growing the SD3 CLIP vocabulary across images can leave
+        # autograd with stale embedding shapes; the solver reinitializes this
+        # token from init_word for each sample before optimizing it.
+        call_popt_kwargs["placeholder_string"] = "<mp>_0"
         result = pipe.sample(
             prompt=[null_prompt, p],
             cfg_guidance=guidance_scale,
