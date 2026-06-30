@@ -26,6 +26,15 @@ Minority/
 !Safety/**/*.json
 !Safety/**/*.log
 
+# Generated detector and aggregation intermediates are reproducible from
+# Operations scripts and should not be committed by default.
+Safety/**/nudenet_scores.json
+Safety/**/sd_safety_scores.json
+Safety/Comparison/**/comparison.json
+Safety/Comparison/**/summary.json
+Safety/Comparison/**/imagewise.csv
+Safety/Comparison/**/promptwise.csv
+
 # Keep Attribution safety logs trackable.
 !Attribution/Safety/Minority/
 !Attribution/Safety/Minority/*.log
