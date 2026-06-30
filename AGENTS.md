@@ -14,6 +14,9 @@ This machine has **4x NVIDIA H100**. GPU-parallel execution is the default:
 - Operations shell scripts for generation/evaluation/scoring MUST split work across 4 GPUs using `CUDA_VISIBLE_DEVICES=N uv run ... &` and `wait`.
 - Python CLIs should expose ranges/options and let Operations shell wrappers shard work.
 - Split ranges as evenly as possible across 4 shards.
+- If a GPU is known-bad for the current machine/session, document that fact in
+  the script comment and shard across the remaining healthy GPUs instead of
+  forcing a failing 4-GPU run. Otherwise prefer all four GPUs.
 
 ## Operations Scripts
 Shell scripts in `Operations/` orchestrate experiments. Numbered subdirectories run sequentially (01 → 02 → ...).
