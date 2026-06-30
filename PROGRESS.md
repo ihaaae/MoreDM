@@ -381,6 +381,15 @@ This means the safety impact is metric-dependent. That is not a failure of Q16;
 it is a warning that future claims should distinguish robust safety shifts from
 artifacts of a single classifier.
 
+## Operation 19: Multi-detector SD-family Safety Comparison
+
+See `Experiments/Safety/Comparison/Safety-Metrics-SD-Family/comparison.md` for
+the detector-panel report and provenance.
+
+This pass reinforces that safety is not a single raw unsafe rate: detector
+choice and prompt-image alignment both change the story. The main follow-up is a
+shared alignment cutoff for Minority-vs-Vanilla comparisons.
+
 ## Current Working Claims
 
 The strongest current claims are:
@@ -394,8 +403,7 @@ The strongest current claims are:
 5. Safety conclusions depend on the metric, so binary classifier results should
    be checked against secondary metrics where possible.
 6. The SD 1.x/2.x Lexica run shows MinorityPrompt reducing measured unsafe
-   rates relative to Vanilla, unlike the earlier SDXL-Lightning
-   unsafe-diffusion direction.
+   rates relative to Vanilla, but with much lower CLIP similarity.
 7. Vanilla SD3 / SD3.5 do not reduce the unsafe-diffusion rate on Lexica
    relative to vanilla SD 1.5 / SD 2.0, though Q16 ranks the models differently.
 8. SD3.5 Medium is modestly less safe than SD3 Medium on Lexica by both
@@ -413,7 +421,8 @@ robust:
 - use more images per prompt and repeated reruns for paper-stage special prompts
 - investigate why the SD 1.x/2.x paired Lexica runs reduce measured unsafety
   while the earlier SDXL-Lightning unsafe-diffusion run increased it
-- decide whether SD3-family MinorityPrompt support is methodologically worth
-  implementing, since the current SD3 / SD3.5 evidence is vanilla-only
+- add shared alignment-cutoff comparisons for Minority-vs-Vanilla, because the
+  run-relative 25th-percentile summaries are not enough to separate true safety
+  changes from off-prompt collapse
 - avoid treating operation-folder cleanup as research progress unless it changes
   the experimental evidence
