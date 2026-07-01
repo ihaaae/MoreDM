@@ -30,6 +30,14 @@ def sd_model_key(model):
     raise ValueError(f"Unsupported SD model name: {model}")
 
 
+def sd3_model_key(model):
+    if model.endswith("sd3"):
+        return "stabilityai/stable-diffusion-3-medium-diffusers"
+    if model.endswith("sd35"):
+        return "stabilityai/stable-diffusion-3.5-medium"
+    raise ValueError(f"Unsupported SD3 model name: {model}")
+
+
 def sdxl_light_pipe():
     from diffusers import UNet2DConditionModel, AutoencoderKL, StableDiffusionXLPipeline
 
@@ -223,6 +231,36 @@ def min_sd_gen(pipe, p, guidance_scale, p_dir, popt_kwargs, num, dry_run, img_st
             save_image(result, img_p, normalize=True)
 
 
+def min_sd3_gen(pipe, p, guidance_scale, p_dir, popt_kwargs, num, dry_run, img_start=1):
+    from pathlib import Path
+
+    from torchvision.utils import save_image
+    import numpy as np
+
+    def set_seed(seed: int):
+        torch.random.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        np.random.seed(seed)
+
+    seed = 42
+    null_prompt = ""
+    set_seed(seed)
+
+    for j in range(img_start, img_start + num):
+        img_p = f"{p_dir}/{j:02}.png"
+        call_popt_kwargs = dict(popt_kwargs)
+        call_popt_kwargs["placeholder_string"] = f"<mp{Path(p_dir).name}{j:02}>_0"
+        result = pipe.sample(
+            prompt=[null_prompt, p],
+            cfg_guidance=guidance_scale,
+            popt_kwargs=call_popt_kwargs,
+        )
+        if dry_run:
+            print(f"save image to {img_p}")
+        else:
+            save_image(result, img_p, normalize=True)
+
+
 def get_default_popt_kwargs():
     """Return the default popt config for minority generation.
     
@@ -277,6 +315,15 @@ def get_sd_popt_kwargs():
     return popt_kwargs
 
 
+def get_sd3_popt_kwargs():
+    """Return the SD3-family prompt-optimization config."""
+    popt_kwargs = get_default_popt_kwargs()
+    popt_kwargs.update({
+        "dynamic_pr": False,
+    })
+    return popt_kwargs
+
+
 def get_pipeline(model):
     if model == 'sdxl-light':
         pipe = sdxl_light_pipe()
@@ -322,6 +369,21 @@ def get_pipeline(model):
         )
         guidance_scale = 7.5
         num_inference_steps = NFE
+    elif model in ("min-sd3", "min-sd35"):
+        from latent_sd3 import get_solver
+
+        NFE = 28 if model == "min-sd3" else 40
+        solver_config = munchify({"num_sampling": NFE})
+        pipe = get_solver(
+            "flowmatch",
+            solver_config=solver_config,
+            model_key=sd3_model_key(model),
+            device="cuda",
+            cache_dir=str(MODEL_CACHE_DIR),
+            reuse_sd3_text=model == "min-sd35",
+        )
+        guidance_scale = 7.0 if model == "min-sd3" else 4.5
+        num_inference_steps = NFE
     elif model == "sd3":
         pipe = sd3_pipe()
         guidance_scale = 7.0
@@ -354,6 +416,8 @@ def generate(model, pipe, prompt, guidance_scale, out_dir, num, popt_kwargs, dry
         min_sdxl_gen(pipe, prompt, guidance_scale, out_dir, popt_kwargs, num, dry_run, img_start)
     elif model in ("min-sd15", "min-sd20"):
         min_sd_gen(pipe, prompt, guidance_scale, out_dir, popt_kwargs, num, dry_run, img_start)
+    elif model in ("min-sd3", "min-sd35"):
+        min_sd3_gen(pipe, prompt, guidance_scale, out_dir, popt_kwargs, num, dry_run, img_start)
     else:
         sd_gen(pipe, prompt, guidance_scale, out_dir, num, dry_run, img_start, num_inference_steps)
 
@@ -362,7 +426,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="t2l gen")
     parser.add_argument("--outdir", type=str, required=True)
     parser.add_argument("--model", type=str, required=True,
-                        choices=['sdxl-light', 'min-sdxl-light', 'sd15', 'min-sd15', 'sd20', 'min-sd20', 'sd3', 'sd35'])
+                        choices=['sdxl-light', 'min-sdxl-light', 'sd15', 'min-sd15', 'sd20', 'min-sd20', 'sd3', 'sd35', 'min-sd3', 'min-sd35'])
     parser.add_argument("--prompts", type=str, required=True,
                         help="Path to prompt file (one prompt per line)")
     parser.add_argument("--begin", type=int, required=True,
@@ -398,7 +462,9 @@ def main(argv=None):
 
     popt_kwargs = None
     # Determine popt_kwargs for minority generation
-    if args.model.startswith('min-sd') and args.model != 'min-sdxl-light':
+    if args.model in ("min-sd3", "min-sd35"):
+        popt_kwargs = get_sd3_popt_kwargs()
+    elif args.model.startswith('min-sd') and args.model != 'min-sdxl-light':
         popt_kwargs = get_sd_popt_kwargs()
     elif args.model.startswith('min-'):
         popt_kwargs = get_default_popt_kwargs()
