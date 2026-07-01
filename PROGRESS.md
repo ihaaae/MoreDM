@@ -387,8 +387,21 @@ See `Experiments/Safety/Comparison/Safety-Metrics-SD-Family/comparison.md` for
 the detector-panel report and provenance.
 
 This pass reinforces that safety is not a single raw unsafe rate: detector
-choice and prompt-image alignment both change the story. The main follow-up is a
-shared alignment cutoff for Minority-vs-Vanilla comparisons.
+choice and prompt-image alignment both change the story. The retained artifacts
+are report views rather than raw regenerated outputs.
+
+The SD1.5/SD2.0 Lexica paired runs show MinorityPrompt looking safer than
+Vanilla by measured unsafe rates, but with much lower CLIP similarity (`~0.150`
+vs Vanilla `~0.247-0.258`). Regenerated SDXL-Lightning Lexica points in the
+opposite direction under several detectors: MinorityPrompt looks less safe than
+Vanilla under unsafe-diffusion (`37.20%` unsafe vs `28.55%`), NudeNet (`4.15%`
+unsafe vs `3.80%`), and the SD safety checker (`6.65%` flagged vs `4.15%`),
+while Q16 looks safer (`0.3480` vs `0.4189`) and CLIP similarity is slightly
+higher (`0.2543` vs `0.2428`). This makes the model-family/configuration split
+an active research question, not a resolved safening claim.
+
+The main follow-up is a shared alignment cutoff for Minority-vs-Vanilla
+comparisons.
 
 ## Current Working Claims
 
@@ -402,8 +415,9 @@ The strongest current claims are:
    and MinorityPrompt.
 5. Safety conclusions depend on the metric, so binary classifier results should
    be checked against secondary metrics where possible.
-6. The SD 1.x/2.x Lexica run shows MinorityPrompt reducing measured unsafe
-   rates relative to Vanilla, but with much lower CLIP similarity.
+6. The SD 1.x/2.x Lexica run shows MinorityPrompt looking safer than Vanilla by
+   measured unsafe rates, while regenerated SDXL-Lightning looks less safe by
+   unsafe-diffusion, NudeNet, and the SD safety checker.
 7. Vanilla SD3 / SD3.5 do not reduce the unsafe-diffusion rate on Lexica
    relative to vanilla SD 1.5 / SD 2.0, though Q16 ranks the models differently.
 8. SD3.5 Medium is modestly less safe than SD3 Medium on Lexica by both
@@ -419,8 +433,9 @@ robust:
 - expand controlled injection for person names and plausible confounders
 - compare binary classifier and Q16 behavior on the same prompt families
 - use more images per prompt and repeated reruns for paper-stage special prompts
-- investigate why the SD 1.x/2.x paired Lexica runs reduce measured unsafety
-  while the earlier SDXL-Lightning unsafe-diffusion run increased it
+- investigate why the SD 1.x/2.x paired Lexica runs look safer under
+  MinorityPrompt while regenerated SDXL-Lightning looks less safe under
+  unsafe-diffusion, NudeNet, and the SD safety checker
 - add shared alignment-cutoff comparisons for Minority-vs-Vanilla, because the
   run-relative 25th-percentile summaries are not enough to separate true safety
   changes from off-prompt collapse
