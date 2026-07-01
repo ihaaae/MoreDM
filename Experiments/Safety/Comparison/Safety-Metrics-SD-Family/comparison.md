@@ -2,7 +2,7 @@
 
 This report summarizes a multi-detector safety pass over existing SD-family
 Lexica and Template runs, plus report-only summaries for regenerated
-SDXL-Lightning Lexica Vanilla/MinorityPrompt runs. It keeps the readable
+SDXL-Lightning Lexica and SD3-family MinorityPrompt runs. It keeps the readable
 research interpretation while leaving raw generated outputs and JSON/CSV
 intermediates out of git.
 
@@ -32,7 +32,8 @@ Reusable CLIs:
 
 ### Source inputs
 
-This report uses existing generated image and metric artifacts under:
+This report uses existing generated image and metric artifacts, plus retained
+report-only summaries, under:
 
 - `Experiments/Safety/Vanilla/Sd15-Lexica/default/`
 - `Experiments/Safety/Vanilla/Sd20-Lexica/default/`
@@ -42,6 +43,8 @@ This report uses existing generated image and metric artifacts under:
 - `Experiments/Safety/Minority/Sd20-Lexica/default/`
 - `Experiments/Safety/Comparison/Metric-Patch-Regenerated-SdxlLight-Lexica-Vanilla/summary.md`
 - `Experiments/Safety/Comparison/Metric-Patch-Regenerated-SdxlLight-Lexica-Minority/summary.md`
+- `Experiments/Safety/Comparison/Metric-Patch-Minority-Sd3-Lexica/summary.md`
+- `Experiments/Safety/Comparison/Metric-Patch-Minority-Sd35-Lexica/summary.md`
 - `Experiments/Safety/Vanilla/Sd15-Template/default/`
 - `Experiments/Safety/Vanilla/Sd20-Template/default/`
 - `Experiments/Safety/Vanilla/SdxlLight-Template/default/`
@@ -51,19 +54,19 @@ This report uses existing generated image and metric artifacts under:
 and corresponding CLIP directories such as
 `Experiments/Safety/Vanilla/Sd15-Lexica/default-clip/`.
 
-For the regenerated SDXL-Lightning Lexica rows, generated images, raw detector
-outputs, CLIP per-image scores, and aggregation intermediates (`summary.json`,
-`comparison.json`, `imagewise.csv`, `promptwise.csv`) are intentionally not
-ported with this report. Those rows therefore preserve the durable report view,
-not the raw data products.
+For the regenerated SDXL-Lightning Lexica rows and SD3-family MinorityPrompt
+rows, generated images, raw detector outputs, CLIP per-image scores, and
+aggregation intermediates (`summary.json`, `comparison.json`, `imagewise.csv`,
+`promptwise.csv`) are intentionally not ported with this report. Those rows
+therefore preserve the durable report view, not the raw data products.
 
 ## Scope
 
 This pass uses existing images for the original SD-family rows and report-only
-summaries for regenerated SDXL-Lightning Lexica Vanilla/MinorityPrompt rows.
-It does not include the unbuilt modern 300-prompt prompt slice because the
-external prompt-source inputs were not present, and it does not include
-person-name control prompts.
+summaries for regenerated SDXL-Lightning Lexica Vanilla/MinorityPrompt rows and
+SD3-family MinorityPrompt rows. It does not include the unbuilt modern
+300-prompt prompt slice because the external prompt-source inputs were not
+present, and it does not include person-name control prompts.
 
 The detector panel is:
 
@@ -131,6 +134,21 @@ and the SD safety checker, while Q16 is lower and CLIP similarity is slightly
 higher. These rows are regenerated report views because the original historical
 SDXL PNGs were absent and could not be scored by image-only detectors.
 
+## SD3-family MinorityPrompt vs Vanilla on Lexica
+
+| Run | Images | Unsafe-diffusion unsafe % | Mean Q16 | NudeNet unsafe % | SD safety unsafe % | Mean CLIP similarity | Unsafe-diffusion aligned unsafe % | NudeNet aligned unsafe % |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Vanilla/Sd3-Lexica/default | 2000 | 44.15% | 0.4283 | 3.05% | 9.50% | 0.2620 | 49.07% | 2.93% |
+| Minority/Sd3-Lexica/default | 2000 | 28.35% | 0.3754 | 1.60% | 28.15% | 0.2214 | 37.53% | 2.13% |
+| Vanilla/Sd35-Lexica/default | 2000 | 46.65% | 0.4687 | 3.05% | 8.45% | 0.2642 | 50.47% | 3.60% |
+| Minority/Sd35-Lexica/default | 2000 | 18.80% | 0.3017 | 1.30% | 27.95% | 0.1897 | 24.87% | 1.73% |
+
+SD3 and SD3.5 MinorityPrompt complete the Lexica all-model panel. They reduce
+unsafe-diffusion, Q16, and NudeNet relative to their Vanilla baselines, but the
+SD safety checker flips sharply upward. CLIP similarity also falls, especially
+for SD3.5, so the apparent safety improvement remains alignment-sensitive and
+detector-dependent.
+
 ## All-model MinorityPrompt status on Lexica
 
 | Model | Strategy | Status | Images | Unsafe-diffusion unsafe % | Mean Q16 | NudeNet unsafe % | SD safety unsafe % | Mean CLIP similarity | Unsafe-diffusion aligned unsafe % | Caveat |
@@ -142,9 +160,9 @@ SDXL PNGs were absent and could not be scored by image-only detectors.
 | SDXL-Lightning | Vanilla | complete-regenerated | 2000 | 28.55% | 0.4189 | 3.80% | 4.15% | 0.2428 | 34.00% | Regenerated Lexica report view; raw outputs are not ported here. |
 | SDXL-Lightning | Minority | complete-regenerated | 2000 | 37.20% | 0.3480 | 4.15% | 6.65% | 0.2543 | 42.80% | Regenerated Lexica report view; raw outputs are not ported here. |
 | SD3 | Vanilla | complete | 2000 | 44.15% | 0.4283 | 3.05% | 9.50% | 0.2620 | 49.07% |  |
-| SD3 | Minority | blocked | n/a | n/a | n/a | n/a | n/a | n/a | n/a | SD3-family MinorityPrompt generation is outside this report stage. |
+| SD3 | Minority | complete | 2000 | 28.35% | 0.3754 | 1.60% | 28.15% | 0.2214 | 37.53% | SD3-family MinorityPrompt report view; raw outputs are not ported here. |
 | SD3.5 | Vanilla | complete | 2000 | 46.65% | 0.4687 | 3.05% | 8.45% | 0.2642 | 50.47% |  |
-| SD3.5 | Minority | blocked | n/a | n/a | n/a | n/a | n/a | n/a | n/a | SD3-family MinorityPrompt generation is outside this report stage. |
+| SD3.5 | Minority | complete | 2000 | 18.80% | 0.3017 | 1.30% | 27.95% | 0.1897 | 24.87% | SD3-family MinorityPrompt report view; raw outputs are not ported here. |
 
 ## Interpretation
 
@@ -154,6 +172,9 @@ SDXL PNGs were absent and could not be scored by image-only detectors.
   MinorityPrompt is higher than Vanilla under unsafe-diffusion, NudeNet, and
   the SD safety checker, while Q16 is lower and CLIP similarity is slightly
   higher.
+- SD3/SD3.5 MinorityPrompt reduces unsafe-diffusion, Q16, and NudeNet relative
+  to Vanilla, but the SD safety checker rises sharply (`SD3: 28.15%` vs
+  `9.50%`; `SD3.5: 27.95%` vs `8.45%`).
 - NudeNet and the SD safety checker should be treated as complementary views,
   not ground truth.
 - Run-relative alignment filtering shows unsafe images are not confined to each
@@ -168,5 +189,8 @@ SDXL PNGs were absent and could not be scored by image-only detectors.
 - CLIP similarity is only a prompt-fidelity proxy.
 - High-alignment unsafe examples from generated `imagewise.csv` outputs should
   be visually inspected before use as qualitative examples.
+- Regenerated SDXL-Lightning and SD3-family MinorityPrompt rows are retained as
+  report views; raw imagewise artifacts must be regenerated if they are needed
+  for qualitative example selection.
 - Build and run the modern prompt slice only after source datasets and license
   notes are verified.
