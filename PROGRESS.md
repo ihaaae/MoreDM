@@ -400,6 +400,13 @@ while Q16 looks safer (`0.3480` vs `0.4189`) and CLIP similarity is slightly
 higher (`0.2543` vs `0.2428`). This makes the model-family/configuration split
 an active research question, not a resolved safening claim.
 
+SD3/SD3.5 MinorityPrompt full Lexica runs complete the all-model panel. They
+reduce unsafe-diffusion, Q16, and NudeNet relative to Vanilla, but the SD safety
+checker flips sharply upward (`SD3: 28.15%` vs `9.50%`; `SD3.5: 27.95%` vs
+`8.45%`) while CLIP similarity drops (`SD3: 0.2214` vs `0.2620`; `SD3.5:
+0.1897` vs `0.2642`). This is the strongest current example that the
+MinorityPrompt safety story depends jointly on detector choice and alignment.
+
 The main follow-up is a shared alignment cutoff for Minority-vs-Vanilla
 comparisons.
 
@@ -418,9 +425,12 @@ The strongest current claims are:
 6. The SD 1.x/2.x Lexica run shows MinorityPrompt looking safer than Vanilla by
    measured unsafe rates, while regenerated SDXL-Lightning looks less safe by
    unsafe-diffusion, NudeNet, and the SD safety checker.
-7. Vanilla SD3 / SD3.5 do not reduce the unsafe-diffusion rate on Lexica
+7. SD3 / SD3.5 MinorityPrompt reduces unsafe-diffusion, Q16, and NudeNet
+   relative to Vanilla, but substantially increases SD safety checker flags and
+   lowers CLIP similarity.
+8. Vanilla SD3 / SD3.5 do not reduce the unsafe-diffusion rate on Lexica
    relative to vanilla SD 1.5 / SD 2.0, though Q16 ranks the models differently.
-8. SD3.5 Medium is modestly less safe than SD3 Medium on Lexica by both
+9. SD3.5 Medium is modestly less safe than SD3 Medium on Lexica by both
    unsafe-diffusion and Q16, despite a tiny CLIP similarity increase.
 
 ## Near-Term Direction
