@@ -1,0 +1,90 @@
+# === Editors / OS ===
+.cursor/
+.idea/
+.zed/
+.ropeproject/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# === Python ===
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# === Raw data and generated experiment roots ===
+# Curated fixtures or result summaries require an explicit reviewed commit and
+# can be force-added when that task decides they belong in Git.
+Datasets/
+Experiments/
+Models/
+models/
+checkpoints/
+analyse/
+outputs/
+artifacts/
+results/
+runs/
+wandb/
+
+# === Generated records and runtime output ===
+*.json
+*.jsonl
+*.csv
+*.tsv
+*.log
+*.out
+*.err
+*.parquet
+*.arrow
+*.npy
+*.npz
+*.pkl
+*.pickle
+
+# === Generated media ===
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# === Model, checkpoint, and cache files ===
+*.ckpt
+*.pt
+*.pth
+*.safetensors
+*.onnx
+*.bin
+*.gguf
+
+# === Imported source trees and local scratch ===
+**/.git/
+Papers/
+MyPaper/
+memory-ds/
+minority/
+t2ls/
+man/
+
+# === Legacy progress and handoff files ===
+PROGRESS.md
+log.md
+HANDOFF.md
+
+# === Local backups ===
+.undo_backup_*/

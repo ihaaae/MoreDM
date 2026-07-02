@@ -1,0 +1,9 @@
+[submodule "modules/MinorityPrompt"]
+	path = modules/MinorityPrompt
+	url = https://github.com/ihaaae/MinorityPrompt.git
+[submodule "modules/Q16"]
+	path = modules/Q16
+	url = https://github.com/ml-research/Q16.git
+[submodule "modules/unsafe-diffusion"]
+	path = modules/unsafe-diffusion
+	url = https://github.com/YitingQu/unsafe-diffusion.git
