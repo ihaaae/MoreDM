@@ -22,9 +22,9 @@ __pycache__/
 .coverage
 htmlcov/
 
-# === Raw data and generated experiment roots ===
-# Curated fixtures or result summaries require an explicit reviewed commit and
-# can be force-added when that task decides they belong in Git.
+# === Raw data, external datasets, and generated experiment roots ===
+# Keep datasets outside this repository. Result summaries require an explicit
+# reviewed commit and can be force-added when that task decides they belong in Git.
 Datasets/
 Experiments/
 Models/
