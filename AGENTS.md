@@ -28,20 +28,21 @@ This machine has 4x NVIDIA H100. GPU-parallel execution is the default:
 - If a GPU is known bad for the current session, document that fact in the
   script comment and shard across the remaining healthy GPUs.
 
-## Experiment Recipes And Reports
+## Recipes And Experiments
 - `Recipes/` contains experiment blueprints: shell scripts and orchestration
   recipes that describe how to build or reproduce experiment artifacts.
-- `Reports/` contains reviewed human-readable result views. Do not use it for
-  raw generated images, detector records, logs, or reproducible intermediates.
+- `Experiments/` contains built experiment artifacts and result views. Use
+  `.gitignore` and the reviewed task scope to determine which experiment
+  artifacts are tracked.
 - Agents working under `Recipes/` must read `Recipes/AGENTS.md` first
   after that file is restored.
 - New recipe scripts should start directly under `Recipes/` with sequential names
   such as `001.sh`, `002.sh`, and move into numbered subdirectories only after
   the recipe family is established.
 - Established recipe scripts should prefer descriptive lowercase hyphenated names.
-- If legacy `Operations/` or `Experiments/` directories appear while refactoring
-  old history, treat them as pending-renamed `Recipes/` and `Reports/` content
-  unless the reviewed task says otherwise.
+- If a legacy `Operations/` directory appears while refactoring old history,
+  treat it as pending-renamed `Recipes/` content unless the reviewed task says
+  otherwise.
 
 ## External Repos
 - Prefer Git submodules for external research repos.
@@ -65,7 +66,7 @@ This machine has 4x NVIDIA H100. GPU-parallel execution is the default:
   ```
 
 - Common scopes: `[repo]`, `[env]`, `[modules]`, `[lib]`, `[bin]`,
-  `[Recipes]`, `[Reports]`, and `[docs]`.
+  `[Recipes]`, `[Experiments]`, and `[docs]`.
 - Use `(chore)` for policy, configuration, dependency, and maintenance changes;
   `(feat)` for new runnable behavior; `(fix)` for behavior corrections; and
   `(docs)` for documentation-only changes.
@@ -76,7 +77,7 @@ This machine has 4x NVIDIA H100. GPU-parallel execution is the default:
   - `[lib]` for reusable Python modules.
   - `[bin]` for command-line entry points and thin wrappers.
   - `[Recipes]` for experiment blueprints/scripts.
-  - `[Reports]` for reviewed human-readable result reports.
+  - `[Experiments]` for built experiment artifacts and result views.
   - `[docs]` for general documentation outside result reports.
 - Use `(refactor)` for behavior-preserving restructuring when that distinction
   is clearer than `(feat)` or `(chore)`.
@@ -86,9 +87,9 @@ This machine has 4x NVIDIA H100. GPU-parallel execution is the default:
 - `lib/` contains reusable library modules used by scripts and recipes.
 - `modules/` contains Git submodule dependencies.
 - `Recipes/` contains experiment blueprints/scripts intended to be run.
-- `Reports/` contains reviewed human-readable experiment result views. Use
-  `.gitignore` and the reviewed task scope to determine which report files are
-  tracked.
+- `Experiments/` contains built experiment artifacts and result views. Use
+  `.gitignore` and the reviewed task scope to determine which experiment files
+  are tracked.
 - `Datasets/` is external and ignored; do not track prompt datasets or dataset
   fixtures in this repository.
 - `MyPaper/` and `Papers/` are unresolved top-level areas.
