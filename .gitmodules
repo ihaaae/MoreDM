@@ -7,3 +7,6 @@
 [submodule "modules/unsafe-diffusion"]
 	path = modules/unsafe-diffusion
 	url = https://github.com/YitingQu/unsafe-diffusion.git
+[submodule "modules/P4D"]
+	path = modules/P4D
+	url = https://github.com/zhiyichin/P4D.git
