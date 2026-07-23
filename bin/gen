@@ -1,11 +1,13 @@
 #!/bin/sh
 set -eu
 
+project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+
 usage() {
     echo "Usage: bin/gen --dataset NAME --subset NAME --strategy Vanilla|Minority [options]"
     echo
     echo "Options:"
-    echo "  --root PATH       Project root (default: /home/lxc/MoreDM)"
+    echo "  --root PATH       Project root (default: $project_root)"
     echo "  --begin N         First prompt ID, 1-based inclusive (default: 1)"
     echo "  --end N           Last prompt ID, 1-based inclusive (default: 50)"
     echo "  --num N           Images per prompt (default: lib/gen.py default)"
@@ -19,7 +21,7 @@ if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
     exit 0
 fi
 
-root="/home/lxc/MoreDM"
+root="$project_root"
 dataset=""
 subset=""
 strategy=""
