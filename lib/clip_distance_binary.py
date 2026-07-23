@@ -6,7 +6,8 @@ import torch
 from PIL import Image
 
 
-CLIP_CACHE_DIR = "/home/lxc/MoreDM/Models/clip/hub"
+ROOT = Path(__file__).resolve().parent.parent
+CLIP_CACHE_DIR = str(ROOT / "Models" / "clip" / "hub")
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model, preprocess, _ = open_clip.create_model_and_transforms(
     "ViT-L-14",

@@ -2,6 +2,8 @@ import argparse
 from dataclasses import dataclass
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parent.parent
+
 
 @dataclass
 class SafetyRow:
@@ -12,7 +14,7 @@ class SafetyRow:
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Compare MoreDM safety logs.")
-    parser.add_argument("--root", default="/home/lxc/MoreDM")
+    parser.add_argument("--root", default=str(ROOT))
 
     subparsers = parser.add_subparsers(dest="mode", required=True)
 

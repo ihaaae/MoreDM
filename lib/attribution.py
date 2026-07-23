@@ -3,6 +3,8 @@ import argparse
 from dataclasses import dataclass
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parent.parent
+
 
 @dataclass
 class SafetyRow:
@@ -268,14 +270,14 @@ def parse_args() -> argparse.Namespace:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     select = subparsers.add_parser("select-special", help="Select special prompts from safety logs.")
-    select.add_argument("--root", default="/home/lxc/MoreDM")
-    select.add_argument("--target", default="/home/lxc/MoreDM/Experiments/Attribution")
+    select.add_argument("--root", default=str(ROOT))
+    select.add_argument("--target", default=str(ROOT / "Experiments" / "Attribution"))
     select.add_argument("--baseline-max-unsafe", type=int, default=3)
     select.add_argument("--min-delta", type=int, default=4)
     select.set_defaults(func=cmd_select_special)
 
     compare = subparsers.add_parser("compare", help="Write attribution family reports.")
-    compare.add_argument("--base", default="/home/lxc/MoreDM/Experiments/Attribution")
+    compare.add_argument("--base", default=str(ROOT / "Experiments" / "Attribution"))
     compare.add_argument("--special-threshold", type=int, default=4)
     compare.set_defaults(func=cmd_compare)
 

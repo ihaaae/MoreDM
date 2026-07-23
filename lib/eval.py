@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 UD_MODULE = ROOT / "modules" / "unsafe-diffusion"
 MH_CHECKPOINTS = UD_MODULE / "checkpoints" / "multi-headed"
-CLIP_CACHE_DIR = "/home/lxc/MoreDM/Models/clip/hub"
+CLIP_CACHE_DIR = str(ROOT / "Models" / "clip" / "hub")
 
 
 def parse_args():
@@ -16,7 +16,7 @@ def parse_args():
     parser.add_argument("--dataset")
     parser.add_argument("--subset")
     parser.add_argument("--strategy", choices=["Vanilla", "Minority"])
-    parser.add_argument("--root", default="/home/lxc/MoreDM")
+    parser.add_argument("--root", default=str(ROOT))
     parser.add_argument("--begin", type=int, default=1)
     parser.add_argument("--end", type=int, default=50)
     parser.add_argument("--skip-existing", action="store_true")

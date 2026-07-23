@@ -5,6 +5,9 @@ import math
 from dataclasses import dataclass
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_CLIP_CACHE = ROOT / "Models" / "clip" / "hub"
+
 
 @dataclass
 class ClipImageRow:
@@ -436,7 +439,7 @@ def parse_args() -> argparse.Namespace:
     score.add_argument("--begin", type=int, required=True)
     score.add_argument("--end", type=int, required=True)
     score.add_argument("--images-per-prompt", type=int, default=10)
-    score.add_argument("--cache-dir", default="/home/lxc/MoreDM/Models/clip/hub")
+    score.add_argument("--cache-dir", default=str(DEFAULT_CLIP_CACHE))
     score.set_defaults(func=cmd_score_images)
 
     imagewise = subparsers.add_parser("compare-imagewise", help="Write image-wise CLIP comparison report.")
