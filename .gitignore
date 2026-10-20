@@ -88,3 +88,7 @@ HANDOFF.md
 
 # === Local backups ===
 .undo_backup_*/
+
+# === Exported paper previews ===
+/main.html
+/main.css
