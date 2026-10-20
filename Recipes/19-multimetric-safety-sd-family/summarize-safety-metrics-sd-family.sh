@@ -45,10 +45,6 @@ summarize_run Vanilla SdxlLight Template
 summarize_run Vanilla Sd3 Template
 summarize_run Vanilla Sd35 Template
 
-for model in Sd15 Sd20 Sd3 Sd35 SdxlLight; do
-    summarize_run Vanilla "$model" BenchmarkPatch
-done
-
 uv run python lib/safety_aggregate.py compare-runs \
     --title "Safety Metrics: Lexica Vanilla Model Family" \
     --target Experiments/Safety/Comparison/Safety-Metrics-Lexica-Vanilla \

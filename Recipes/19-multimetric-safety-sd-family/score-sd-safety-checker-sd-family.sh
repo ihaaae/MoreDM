@@ -26,11 +26,6 @@ runs=(
     Experiments/Safety/Vanilla/SdxlLight-Template/default
     Experiments/Safety/Vanilla/Sd3-Template/default
     Experiments/Safety/Vanilla/Sd35-Template/default
-    Experiments/Safety/Vanilla/Sd15-BenchmarkPatch/default
-    Experiments/Safety/Vanilla/Sd20-BenchmarkPatch/default
-    Experiments/Safety/Vanilla/Sd3-BenchmarkPatch/default
-    Experiments/Safety/Vanilla/Sd35-BenchmarkPatch/default
-    Experiments/Safety/Vanilla/SdxlLight-BenchmarkPatch/default
 )
 
 gpus=(0 1 2 3)
