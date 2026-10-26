@@ -504,6 +504,19 @@ def audit_generate(args, prompts):
                 checksum.update(chunk)
         return checksum.hexdigest()
 
+    init_words = {}
+    if args.audit_init_words:
+        if args.model != "min-sdxl" or args.audit_arms != ["tailprobe"]:
+            raise ValueError("Per-prompt initializers require min-sdxl tailprobe only.")
+        selection = json.loads(Path(args.audit_init_words).read_text())
+        for row in selection["selections"]:
+            pid, word = row["prompt_id"], row["init_word"]
+            if pid in init_words or not isinstance(word, str) or not word.strip():
+                raise ValueError("Duplicate prompt ID or empty initializer.")
+            init_words[pid] = word
+        if any(pid not in init_words for pid in prompt_ids):
+            raise ValueError("Missing per-prompt initializer.")
+
     outdir = Path(args.outdir)
     manifest = outdir / "manifests" / (
         f"{args.begin:03}-{args.end:03}-{args.img_start:02}-{args.num}.json"
@@ -562,6 +575,9 @@ def audit_generate(args, prompts):
         "output_moderation": "disabled; detectors score saved raw outputs separately",
         "image_encoding": "clamp [0,1]; no per-image min/max normalization",
     }
+    if init_words:
+        metadata["init_words"] = {str(pid): init_words[pid] for pid in prompt_ids}
+        metadata["init_words_sha256"] = digest(args.audit_init_words)
     if args.model in ("min-sdxl-light", "sdxl-light"):
         metadata["lightning_checkpoint_sha256"] = digest(LIGHTNING_CHECKPOINT)
     if args.model in ("sdxl", "min-sdxl"):
@@ -571,6 +587,10 @@ def audit_generate(args, prompts):
         json.dump(metadata, stream, indent=2)
 
     pipe, guidance_scale, num_steps = get_pipeline(args.model, args.sdxl_base_path)
+    for pid in prompt_ids:
+        if init_words and any(len(tokenizer.encode(init_words[pid], add_special_tokens=False)) != 1
+                              for tokenizer in (pipe.tokenizer_1_base, pipe.tokenizer_2_base)):
+            raise ValueError(f"Initializer for prompt {pid} must be one token in both tokenizers.")
     if args.audit_timestep_spacing is not None:
         pipe.scheduler = type(pipe.scheduler).from_config(
             pipe.scheduler.config, timestep_spacing=args.audit_timestep_spacing,
@@ -664,10 +684,13 @@ def audit_generate(args, prompts):
                                 output_type="pt",
                             ).images
                         else:
+                            sample_config = dict(configs[arm])
+                            if init_words:
+                                sample_config["init_word"] = init_words[pid]
                             image = pipe.sample(
                                 prompt1=["", prompt], prompt2=["", prompt],
                                 cfg_guidance=guidance_scale, target_size=(1024, 1024),
-                                popt_kwargs=dict(configs[arm]),
+                                popt_kwargs=sample_config,
                             )
                     torch.cuda.synchronize()
                 finally:
@@ -696,6 +719,8 @@ def audit_generate(args, prompts):
                     "image_sha256": digest(stem.with_suffix(".png")),
                     **trace,
                 }
+                if init_words:
+                    record["init_word"] = init_words[pid]
                 with stem.with_suffix(".json").open("x", encoding="utf-8") as stream:
                     json.dump(record, stream, indent=2)
     metadata["status"] = "complete"
@@ -731,8 +756,11 @@ def main(argv=None):
                         help="Audit only: original prompt IDs to generate inside --begin/--end.")
     parser.add_argument("--seed-base", type=int,
                         help="Required for audit generation; shared across arms and shards.")
+    parser.add_argument("--audit-init-words", help="Jev selections JSON; min-sdxl tailprobe only.")
 
     args = parser.parse_args(argv)
+    if args.audit_init_words and not args.audit_arms:
+        parser.error("--audit-init-words requires --audit-arms.")
     if args.model in ("sdxl", "min-sdxl") and not args.audit_arms:
         parser.error("Base SDXL is currently supported only through --audit-arms.")
     if args.sdxl_base_path is not None and args.model not in ("sdxl", "min-sdxl"):
