@@ -1,6 +1,10 @@
 import os
 import sys
 import argparse
+import hashlib
+import importlib.metadata
+import json
+import time
 from pathlib import Path
 
 import torch
@@ -328,8 +332,31 @@ def get_sd3_popt_kwargs():
     return popt_kwargs
 
 
-def get_pipeline(model):
-    if model == 'sdxl-light':
+def get_pipeline(model, sdxl_base_path=None):
+    if model in ("sdxl", "min-sdxl"):
+        if sdxl_base_path is None or not Path(sdxl_base_path).is_dir():
+            raise ValueError("Base SDXL requires an explicit local --sdxl-base-path.")
+        if model == "sdxl":
+            from diffusers import AutoencoderKL, StableDiffusionXLPipeline
+
+            vae = AutoencoderKL.from_pretrained(
+                "madebyollin/sdxl-vae-fp16-fix", torch_dtype=torch.float16,
+                cache_dir=str(MODEL_CACHE_DIR), local_files_only=True,
+            )
+            pipe = StableDiffusionXLPipeline.from_pretrained(
+                sdxl_base_path, vae=vae, torch_dtype=torch.float16,
+                local_files_only=True,
+            ).to("cuda")
+        else:
+            from latent_sdxl import get_solver as get_solver_sdxl
+
+            pipe = get_solver_sdxl(
+                "ddim", solver_config=munchify({"num_sampling": 50}),
+                model_key=str(sdxl_base_path), device="cuda",
+            )
+        pipe.unet.requires_grad_(False)
+        guidance_scale, num_inference_steps = 7.5, 50
+    elif model == 'sdxl-light':
         pipe = sdxl_light_pipe()
         guidance_scale = 1.0
         num_inference_steps = 4
@@ -426,11 +453,261 @@ def generate(model, pipe, prompt, guidance_scale, out_dir, num, popt_kwargs, dry
         sd_gen(pipe, prompt, guidance_scale, out_dir, num, dry_run, img_start, num_inference_steps)
 
 
+def audit_generate(args, prompts):
+    """Generate fresh, seed-paired controls without changing legacy generation.
+
+    Custom SDXL arms use the same upstream DDIM implementation per model.
+    Diagnostic runs also support the original Diffusers pipeline, paired on
+    CPU FP32 Gaussian noise before each sampler's native scaling/casting.
+    The first UNet input is checked across custom arms, not across samplers.
+    Phases occupy disjoint seed ranges; this is not a full recovery protocol.
+    """
+    from torchvision.utils import save_image
+
+    if args.model not in ("min-sdxl-light", "sdxl-light", "sdxl", "min-sdxl", "sd15"):
+        raise ValueError("Audit generation supports SDXL models and the sd15 reference.")
+    if args.model in ("sd15", "sdxl-light", "sdxl") and args.audit_arms != ["standard"]:
+        raise ValueError("Diffusers pipelines support only the standard arm.")
+    if args.model in ("sdxl-light", "sdxl", "min-sdxl") and args.audit_phase != "diagnostic":
+        raise ValueError("Base SDXL and the original pipeline require diagnostic runs.")
+    if args.model in ("sdxl", "min-sdxl") and args.sdxl_base_path is None:
+        raise ValueError("Base SDXL requires an explicit local --sdxl-base-path.")
+    if args.audit_phase == "diagnostic" and args.model == "sd15":
+        raise ValueError("The paired sampler diagnostic supports only SDXL-Lightning.")
+    if args.audit_timestep_spacing is not None and (
+        args.model != "sdxl-light" or args.audit_phase != "diagnostic"
+    ):
+        raise ValueError("Timestep-spacing overrides require the SDXL Diffusers diagnostic.")
+    if args.audit_phase == "selection" and args.audit_arms != ["standard"]:
+        raise ValueError("Selection must not inspect intervention outcomes.")
+    if args.dry_run or args.smoke:
+        raise ValueError("Use explicit --begin/--end/--num and --audit-phase pilot instead.")
+    if args.seed_base is None or not 0 <= args.seed_base < 1_000_000_000:
+        raise ValueError("Audit generation requires --seed-base in [0, 1000000000).")
+    if not 1 <= args.begin <= args.end <= len(prompts) < 1_000_000:
+        raise ValueError("Invalid inclusive prompt range.")
+    if args.num is None or not 1 <= args.img_start <= args.img_start + args.num - 1 <= 999:
+        raise ValueError("Set --num explicitly; image IDs must be in 1..999.")
+    if len(set(args.audit_arms)) != len(args.audit_arms):
+        raise ValueError("Audit arms must be unique.")
+    prompt_ids = list(range(args.begin, args.end + 1))
+    if args.prompt_ids is not None:
+        if (len(set(args.prompt_ids)) != len(args.prompt_ids)
+                or any(pid not in prompt_ids for pid in args.prompt_ids)):
+            raise ValueError("Audit prompt IDs must be unique and inside --begin/--end.")
+        prompt_ids = sorted(args.prompt_ids)
+
+    def digest(path):
+        checksum = hashlib.sha256()
+        with Path(path).open("rb") as stream:
+            for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                checksum.update(chunk)
+        return checksum.hexdigest()
+
+    outdir = Path(args.outdir)
+    manifest = outdir / "manifests" / (
+        f"{args.begin:03}-{args.end:03}-{args.img_start:02}-{args.num}.json"
+    )
+    if manifest.exists():
+        raise FileExistsError(f"Existing shard manifest; choose a fresh output directory: {manifest}")
+    for pid in prompt_ids:
+        for iid in range(args.img_start, args.img_start + args.num):
+            for arm in args.audit_arms:
+                stem = outdir / arm / f"{pid:03}" / f"{iid:02}"
+                if stem.with_suffix(".png").exists() or stem.with_suffix(".json").exists():
+                    raise FileExistsError(f"Refusing to overwrite audit output: {stem}")
+
+    configs = {}
+    for arm in args.audit_arms:
+        # Upstream non-Lightning defaults: 50 steps, CFG7.5, ten updates at
+        # t>900, fixed p_ratio. Dynamic timing is invalid at the last DDIM step.
+        config = get_sd_popt_kwargs() if args.model in ("sdxl", "min-sdxl") else get_default_popt_kwargs()
+        if arm == "standard":
+            config["prompt_opt"] = False
+        elif arm in ("frozen", "random"):
+            config["p_opt_iter"] = 0
+            if arm == "random":
+                # The upstream diagonal Gaussian matches vocabulary coordinate
+                # means/variances. This is frozen random-v, not random updates
+                # or a norm-matched adversarial control.
+                config["init_type"] = "gaussian_white"
+        configs[arm] = config
+
+    phase_offset = {"pilot": 0, "selection": 1_000_000_000,
+                    "evaluation": 2_000_000_000, "calibration": 3_000_000_000,
+                    "diagnostic": 4_000_000_000}
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    metadata = {
+        "model": args.model,
+        "phase": args.audit_phase,
+        "seed_base": args.seed_base,
+        "seed_rule": "seed_base + phase_offset + prompt_id * 1000 + image_id",
+        "phase_offset": phase_offset[args.audit_phase],
+        "begin": args.begin,
+        "end": args.end,
+        "prompt_ids": prompt_ids,
+        "img_start": args.img_start,
+        "num": args.num,
+        "arms": args.audit_arms,
+        "popt_kwargs": configs,
+        "prompts_sha256": digest(args.prompts),
+        "source_sha256": {str(path.relative_to(ROOT)): digest(path) for path in (
+            Path(__file__), MINORITY_PROMPT_ROOT / "latent_sdxl.py", ROOT / "uv.lock"
+        )},
+        "package_versions": {name: importlib.metadata.version(name) for name in (
+            "torch", "diffusers", "transformers", "torchvision"
+        )},
+        "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
+        "status": "started",
+        "output_moderation": "disabled; detectors score saved raw outputs separately",
+        "image_encoding": "clamp [0,1]; no per-image min/max normalization",
+    }
+    if args.model in ("min-sdxl-light", "sdxl-light"):
+        metadata["lightning_checkpoint_sha256"] = digest(LIGHTNING_CHECKPOINT)
+    if args.model in ("sdxl", "min-sdxl"):
+        metadata["base_unet_sha256"] = digest(Path(args.sdxl_base_path) / "unet/diffusion_pytorch_model.safetensors")
+        metadata["base_model_path"] = str(Path(args.sdxl_base_path).resolve())
+    with manifest.open("x", encoding="utf-8") as stream:
+        json.dump(metadata, stream, indent=2)
+
+    pipe, guidance_scale, num_steps = get_pipeline(args.model, args.sdxl_base_path)
+    if args.audit_timestep_spacing is not None:
+        pipe.scheduler = type(pipe.scheduler).from_config(
+            pipe.scheduler.config, timestep_spacing=args.audit_timestep_spacing,
+        )
+    if args.model == "sd15":
+        # Compare raw model behavior, not blacked-out moderation replacements.
+        pipe.safety_checker = None
+    denoiser = pipe.unet
+    metadata.update({
+        "guidance_scale": guidance_scale,
+        "num_inference_steps": num_steps,
+        "scheduler_class": type(pipe.scheduler).__name__,
+        "scheduler_config": dict(pipe.scheduler.config),
+        "sampler": ("upstream ddim_lightning" if args.model == "min-sdxl-light" else
+                    "upstream ddim" if args.model == "min-sdxl" else "diffusers pipeline"),
+        "gpu": torch.cuda.get_device_name(),
+    })
+    if args.audit_phase == "diagnostic":
+        metadata["noise_pairing"] = (
+            "CPU torch.randn FP32 (1,4,128,128) with per-image seed; custom initializer "
+            "verified byte-identical; Diffusers receives same noise cast to native FP16 "
+            "before native init_noise_sigma scaling. No cross-sampler UNet-input equality."
+        )
+    manifest.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+
+    for pid in prompt_ids:
+        prompt = prompts[pid - 1]
+        for iid in range(args.img_start, args.img_start + args.num):
+            seed = args.seed_base + phase_offset[args.audit_phase] + pid * 1000 + iid
+            paired_input = None
+            base_noise = None
+            if args.audit_phase == "diagnostic":
+                base_noise = torch.randn(
+                    (1, 4, 128, 128), dtype=torch.float32,
+                    generator=torch.Generator(device="cpu").manual_seed(seed),
+                )
+            for arm in args.audit_arms:
+                trace = {"unet_forward_calls": 0}
+                original_initializer = None
+                if base_noise is not None:
+                    trace["base_noise_sha256"] = hashlib.sha256(base_noise.numpy().tobytes()).hexdigest()
+                    if args.model in ("min-sdxl-light", "min-sdxl"):
+                        original_initializer = pipe.initialize_latent
+
+                        def checked_initializer(*positional, **keyword):
+                            latent = original_initializer(*positional, **keyword)
+                            if not torch.equal(latent.detach().cpu(), base_noise):
+                                raise RuntimeError("Custom initializer differs from paired Gaussian noise")
+                            trace["base_noise_verified"] = True
+                            return latent
+
+                        pipe.initialize_latent = checked_initializer
+
+                def capture_input(module, positional, keyword):
+                    trace["unet_forward_calls"] += 1
+                    if "first_unet_input_sha256" not in trace:
+                        latent = keyword.get("sample")
+                        if latent is None:
+                            latent = positional[0]
+                        trace["first_unet_batch_size"] = latent.shape[0]
+                        # The normal sampler batches unconditional/conditional
+                        # copies; prompt optimization uses only the conditional
+                        # pass. Compare the first latent, not the CFG batch.
+                        latent = latent[:1].detach().contiguous().cpu()
+                        trace["first_unet_input_sha256"] = hashlib.sha256(latent.numpy().tobytes()).hexdigest()
+                        trace["first_unet_input_shape"] = list(latent.shape)
+                        trace["first_unet_input_dtype"] = str(latent.dtype)
+
+                hook = denoiser.register_forward_pre_hook(capture_input, with_kwargs=True)
+                torch.manual_seed(seed)
+                torch.cuda.synchronize()
+                torch.cuda.reset_peak_memory_stats()
+                started = time.perf_counter()
+                try:
+                    with torch.no_grad():
+                        if args.model == "sd15":
+                            image = pipe(
+                                prompt=prompt,
+                                guidance_scale=guidance_scale,
+                                num_inference_steps=num_steps,
+                                generator=torch.Generator(device="cuda").manual_seed(seed),
+                            ).images[0]
+                        elif args.model in ("sdxl-light", "sdxl"):
+                            latents = base_noise.to(device="cuda", dtype=pipe.unet.dtype)
+                            trace["base_noise_verified"] = torch.equal(
+                                latents.cpu(), base_noise.to(dtype=pipe.unet.dtype)
+                            )
+                            image = pipe(
+                                prompt=prompt, guidance_scale=guidance_scale,
+                                num_inference_steps=num_steps, latents=latents,
+                                output_type="pt",
+                            ).images
+                        else:
+                            image = pipe.sample(
+                                prompt1=["", prompt], prompt2=["", prompt],
+                                cfg_guidance=guidance_scale, target_size=(1024, 1024),
+                                popt_kwargs=dict(configs[arm]),
+                            )
+                    torch.cuda.synchronize()
+                finally:
+                    hook.remove()
+                    if original_initializer is not None:
+                        pipe.initialize_latent = original_initializer
+                elapsed = time.perf_counter() - started
+                if base_noise is not None and not trace.get("base_noise_verified"):
+                    raise RuntimeError("Paired Gaussian noise was not verified")
+                initial_input = trace["first_unet_input_sha256"]
+                if paired_input is not None and initial_input != paired_input:
+                    raise RuntimeError(f"Initial denoiser input mismatch at {pid}/{iid}, arm={arm}")
+                paired_input = initial_input
+                stem = outdir / arm / f"{pid:03}" / f"{iid:02}"
+                stem.parent.mkdir(parents=True, exist_ok=True)
+                if args.model == "sd15":
+                    image.save(stem.with_suffix(".png"))
+                else:
+                    save_image(image, stem.with_suffix(".png"), normalize=False)
+                record = {
+                    "prompt_id": pid, "image_id": iid, "arm": arm, "seed": seed,
+                    "phase": args.audit_phase, "seconds": elapsed,
+                    "timing_warmup": pid == prompt_ids[0] and iid == args.img_start,
+                    "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
+                    "peak_allocated_bytes": torch.cuda.max_memory_allocated(),
+                    "image_sha256": digest(stem.with_suffix(".png")),
+                    **trace,
+                }
+                with stem.with_suffix(".json").open("x", encoding="utf-8") as stream:
+                    json.dump(record, stream, indent=2)
+    metadata["status"] = "complete"
+    manifest.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="t2l gen")
     parser.add_argument("--outdir", type=str, required=True)
     parser.add_argument("--model", type=str, required=True,
-                        choices=['sdxl-light', 'min-sdxl-light', 'sd15', 'min-sd15', 'sd20', 'min-sd20', 'sd3', 'sd35', 'min-sd3', 'min-sd35'])
+                        choices=['sdxl-light', 'min-sdxl-light', 'sdxl', 'min-sdxl', 'sd15', 'min-sd15', 'sd20', 'min-sd20', 'sd3', 'sd35', 'min-sd3', 'min-sd35'])
+    parser.add_argument("--sdxl-base-path", help="Local base SDXL snapshot for diagnostic runs; no Lightning weights.")
     parser.add_argument("--prompts", type=str, required=True,
                         help="Path to prompt file (one prompt per line)")
     parser.add_argument("--begin", type=int, required=True,
@@ -445,11 +722,32 @@ def main(argv=None):
                         help="Starting image index for naming (default: 1)")
     parser.add_argument("--default", action="store_true",
                         help="Use default popt config for minority generation (init_word=handsome, num_opt_tokens=1)")
+    parser.add_argument("--audit-arms", nargs="+", choices=["standard", "frozen", "random", "tailprobe"],
+                        help="Fresh seed-paired audit arms; outputs go under <outdir>/<arm>.")
+    parser.add_argument("--audit-phase", choices=["pilot", "selection", "evaluation", "calibration", "diagnostic"], default="pilot")
+    parser.add_argument("--audit-timestep-spacing", choices=["leading", "trailing"],
+                        help="SDXL Diffusers diagnostic only: override scheduler spacing, not other settings.")
+    parser.add_argument("--prompt-ids", nargs="+", type=int,
+                        help="Audit only: original prompt IDs to generate inside --begin/--end.")
+    parser.add_argument("--seed-base", type=int,
+                        help="Required for audit generation; shared across arms and shards.")
 
     args = parser.parse_args(argv)
+    if args.model in ("sdxl", "min-sdxl") and not args.audit_arms:
+        parser.error("Base SDXL is currently supported only through --audit-arms.")
+    if args.sdxl_base_path is not None and args.model not in ("sdxl", "min-sdxl"):
+        parser.error("--sdxl-base-path is only for sdxl/min-sdxl.")
 
     with open(args.prompts, encoding="utf-8") as f:
-        all_lines = [line.strip() for line in f if line.strip()]
+        lines = f.read().splitlines()
+    if args.audit_arms:
+        if any(not line.strip() for line in lines):
+            parser.error("Audit prompt files must not contain blank lines (IDs must stay stable).")
+        audit_generate(args, [line.strip() for line in lines])
+        return
+    if args.seed_base is not None or args.prompt_ids is not None or args.audit_timestep_spacing is not None:
+        parser.error("Audit options require --audit-arms.")
+    all_lines = [line.strip() for line in lines if line.strip()]
     prompts = all_lines[args.begin - 1 : args.end]
 
     pipe, guidance_scale, num_inference_steps = get_pipeline(args.model)
