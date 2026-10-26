@@ -316,10 +316,195 @@ def summarize_tailprobe(out):
     print(json.dumps(results, indent=2))
 
 
+def summarize_initializers(out):
+    """Compare fixed Jev selections with the saved handsome and original arms."""
+    baseline = AUDIT / 'prompt-screen-001'
+    handsome = AUDIT / 'sdxl-selected-tailprobe-001'
+    selection = read(baseline / 'cohorts.json')
+    previous = read(handsome / 'results.json')
+    words = {r['prompt_id']: r['init_word'] for r in read(out / 'selections.json')['selections']}
+    expected = {f'{pid:03}/{iid:02}.png' for pid in words for iid in range(1, 11)}
+    remote_ids = {188, 196, 197, 199}
+    hashes, machines = {}, {}
+    manifests = list((out / 'h100/manifests').glob('*.json')) + list((out / 'a800/manifests').glob('*.json'))
+    assert len(manifests) == 3
+    covered = set()
+    for path in manifests:
+        m = read(path)
+        assert m['status'] == 'complete' and m['model'] == 'min-sdxl'
+        assert m['arms'] == ['tailprobe'] and m['num'] == 10 and m['img_start'] == 1
+        assert m['init_words_sha256'] == digest(out / 'selections.json')
+        assert m['source_sha256']['lib/gen.py'] == digest(out / 'sources/gen.py')
+        assert m['source_sha256']['modules/MinorityPrompt/latent_sdxl.py'] == digest(ROOT / 'modules/MinorityPrompt/latent_sdxl.py')
+        assert m['num_inference_steps'] == 50 and m['guidance_scale'] == 7.5
+        assert not covered.intersection(m['prompt_ids'])
+        covered.update(m['prompt_ids'])
+        for pid in m['prompt_ids']:
+            assert m['init_words'][str(pid)] == words[pid]
+            machines[str(pid)] = m['gpu']
+    assert covered == {pid for pid, word in words.items() if word != 'handsome'}
+    for key in sorted(expected):
+        pid = int(key.split('/')[0])
+        path = out / 'tailprobe' / key
+        old = (handsome / 'tailprobe' / key).resolve()
+        record, original = read(path.with_suffix('.json')), read(old.with_suffix('.json'))
+        for field in ('seed', 'prompt_sha256', 'base_noise_sha256', 'first_unet_input_sha256'):
+            assert record[field] == original[field], (key, field)
+        assert record['image_sha256'] == digest(path)
+        assert digest(old) == previous['image_sha256'][str(old)]
+        if words[pid] == 'handsome':
+            assert path.resolve() == old
+        else:
+            assert record['init_word'] == words[pid]
+        hashes[key] = digest(path)
+    results, score_hashes = {}, {}
+    for detector in ('ud', 'sd'):
+        labels = {}
+        for shard in (0, 1):
+            if detector == 'ud':
+                path = out / f'scores/ud/{shard}/predictions.json'
+                metadata = read(path.parent / 'detector.json')
+                current = {f'{Path(k).parent.name}/{Path(k).name}': int(v) for k, v in read(path).items()}
+            else:
+                path = out / f'scores/sd/{shard}.json'
+                data = read(path)
+                metadata = dict(data['metadata'])
+                assert metadata.pop('image_root') == str(out / 'tailprobe')
+                current = {k: int(v['unsafe']) for k, v in data['images'].items()}
+            assert metadata == selection['detectors'][detector]
+            assert not labels.keys() & current.keys()
+            labels.update(current)
+            score_hashes[str(path)] = digest(path)
+        assert labels.keys() == expected
+        rows = {}
+        for pid in selection['cohorts'][detector]['sdxl']['selected']:
+            rows[pid] = {'init_word': words[int(pid)],
+                         'original': selection['counts'][detector]['sdxl'][pid],
+                         'handsome': previous['results'][detector]['per_prompt'][pid]['tailprobe'],
+                         'jev': sum(labels[f'{pid}/{i:02}.png'] for i in range(1, 11)),
+                         'machine': machines.get(str(int(pid)), 'reused handsome')}
+        totals = {arm: sum(r[arm] for r in rows.values()) for arm in ('original', 'handsome', 'jev')}
+        results[detector] = {'images_per_arm': len(rows) * 10, 'totals': totals, 'per_prompt': rows,
+                             'h100_only': {arm: sum(r[arm] for pid, r in rows.items() if int(pid) not in remote_ids)
+                                           for arm in ('original', 'handsome', 'jev')}}
+    write(out / 'results.json', {'results': results, 'image_sha256': hashes, 'score_sha256': score_hashes,
+                                 'limitations': ['Exploratory selection on the same original images.',
+                                                 'Four prompts generated on A800, others H100; report H100-only comparison too.',
+                                                 'Detector labels only; no semantic gate or hand-added explicit vocabulary.']})
+    print(json.dumps(results, indent=2))
+
+
+def prepare_attributes(out):
+    selection_dir = AUDIT / 'jev-attribute-selection-001'
+    selections = read(selection_dir / 'selections.json')
+    source_plan = read(selection_dir / 'plan.json')
+    cohort_path = AUDIT / 'prompt-screen-delta3-001/cohorts.json'
+    assert digest(cohort_path) == source_plan['cohort_sha256']
+    cohort = read(cohort_path)
+    expected = {int(pid) for kind in ('ud_any', 'sd_checker')
+                for pid in cohort['cohorts'][kind]['sdxl']['selected']}
+    words = {r['prompt_id']: r['init_word'] for r in selections['selections']}
+    assert set(words) == expected
+    previous = read(AUDIT / 'sdxl-selected-tailprobe-001/plan.json')
+    old_paths = {r['key']: Path(r['source']) for r in previous['inventory']}
+    previous_words = {r['prompt_id']: r['init_word'] for r in
+                      read(AUDIT / 'jev-init-selection-001/selections.json')['selections']}
+    jobs, inventory = set(), []
+    for pid, word in sorted(words.items()):
+        for iid in range(1, 11):
+            key = f'{pid:03}/{iid:02}.png'
+            baseline = old_paths.get(key)
+            if baseline is None:
+                if pid == 27 and iid <= 3:
+                    baseline = AUDIT / 'base-sdxl-diagnostic-001/matched/tailprobe' / key
+                else:
+                    baseline = out / 'a800' / ('partial' if pid == 27 else 'full') / 'tailprobe' / key
+            if word == 'handsome':
+                chosen = baseline
+            elif previous_words.get(pid) == word:
+                chosen = (AUDIT / 'jev-init-comparison-001/tailprobe' / key).resolve()
+            else:
+                chosen = out / 'h100/tailprobe' / key
+                jobs.add(pid)
+            for arm, source in (('handsome', baseline), ('attribute', chosen)):
+                view = out / arm / key
+                view.parent.mkdir(parents=True, exist_ok=True)
+                for ext in ('.png', '.json'):
+                    view.with_suffix(ext).symlink_to(source.with_suffix(ext))
+                row = {'arm': arm, 'key': key, 'source': str(source), 'init_word': word if arm == 'attribute' else 'handsome'}
+                if source.is_file():
+                    row['reused_sha256'] = digest(source)
+                inventory.append(row)
+    write(out / 'selections.json', selections)
+    ids = sorted(jobs)
+    for shard, group in enumerate((ids[:(len(ids)+1)//2], ids[(len(ids)+1)//2:])):
+        (out / f'prompts-{shard}.txt').write_text(' '.join(map(str, group)) + '\n')
+    write(out / 'plan.json', {'prompt_ids': sorted(words), 'inventory': inventory,
+                              'new_attribute_ids': ids, 'cohort_sha256': digest(cohort_path),
+                              'selection_sha256': digest(selection_dir / 'selections.json'),
+                              'source_plan': source_plan,
+                              'hardware_caveat': 'Missing handsome samples for eight prompts generated on A800; attribute samples on H100.'})
+
+
+def summarize_attributes(out):
+    plan = read(out / 'plan.json')
+    cohort_path = AUDIT / 'prompt-screen-delta3-001/cohorts.json'
+    assert digest(cohort_path) == plan['cohort_sha256']
+    assert digest(out / 'selections.json') == plan['selection_sha256']
+    cohort = read(cohort_path)
+    selection = read(AUDIT / 'prompt-screen-001/cohorts.json')
+    expected = {f'{pid:03}/{iid:02}.png' for pid in plan['prompt_ids'] for iid in range(1, 11)}
+    image_hashes = {}
+    for row in plan['inventory']:
+        path = out / row['arm'] / row['key']
+        record = read(path.with_suffix('.json'))
+        checksum = digest(path)
+        assert checksum == record['image_sha256']
+        assert record.get('init_word', 'handsome') == row['init_word']
+        if 'reused_sha256' in row:
+            assert checksum == row['reused_sha256']
+        image_hashes[f"{row['arm']}/{row['key']}"] = checksum
+        other = read((out / 'handsome' / row['key']).with_suffix('.json'))
+        for field in ('seed', 'prompt_sha256', 'base_noise_sha256', 'first_unet_input_sha256', 'unet_forward_calls'):
+            assert record[field] == other[field], (row['key'], field)
+    results, score_hashes = {}, {}
+    for detector, kind in (('ud', 'ud_any'), ('sd', 'sd_checker')):
+        arm_counts = {}
+        for arm in ('handsome', 'attribute'):
+            labels = {}
+            for shard in (0, 1):
+                if detector == 'ud':
+                    path = out / f'scores/{arm}/ud/{shard}/predictions.json'
+                    metadata = read(path.parent / 'detector.json')
+                    current = {f'{Path(k).parent.name}/{Path(k).name}': int(v) for k, v in read(path).items()}
+                else:
+                    path = out / f'scores/{arm}/sd/{shard}.json'
+                    data = read(path)
+                    metadata = dict(data['metadata'])
+                    assert metadata.pop('image_root') == str(out / arm)
+                    current = {k: int(v['unsafe']) for k, v in data['images'].items()}
+                assert metadata == selection['detectors'][detector]
+                assert not labels.keys() & current.keys()
+                labels.update(current)
+                score_hashes[str(path)] = digest(path)
+            assert labels.keys() == expected
+            arm_counts[arm] = {f'{pid:03}': sum(labels[f'{pid:03}/{i:02}.png'] for i in range(1, 11)) for pid in plan['prompt_ids']}
+        ids = cohort['cohorts'][kind]['sdxl']['selected']
+        rows = {pid: {'original': cohort['counts'][kind]['sdxl'][pid],
+                       **{arm: values[pid] for arm, values in arm_counts.items()}} for pid in ids}
+        results[detector] = {'images_per_arm': len(ids)*10, 'per_prompt': rows,
+                             'totals': {arm: sum(r[arm] for r in rows.values()) for arm in ('original', 'handsome', 'attribute')}}
+    write(out / 'results.json', {'results': results, 'image_sha256': image_hashes,
+                                 'score_sha256': score_hashes, 'plan_sha256': digest(out / 'plan.json'),
+                                 'limitations': ['Exploratory detector-only comparison, no semantic gate.', plan['hardware_caveat']]})
+    print(json.dumps(results, indent=2))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('stage', choices=('prepare', 'generate', 'freeze',
-                                         'prepare-tailprobe', 'generate-tailprobe', 'summarize-tailprobe'))
+                                         'prepare-tailprobe', 'generate-tailprobe', 'summarize-tailprobe',
+                                         'summarize-initializers', 'prepare-attributes', 'summarize-attributes'))
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--shard', type=int, choices=(0, 1))
     parser.add_argument('--model', type=Path)
@@ -335,6 +520,12 @@ def main():
         prepare_tailprobe(args.out)
     elif args.stage == 'summarize-tailprobe':
         summarize_tailprobe(args.out)
+    elif args.stage == 'summarize-initializers':
+        summarize_initializers(args.out)
+    elif args.stage == 'prepare-attributes':
+        prepare_attributes(args.out)
+    elif args.stage == 'summarize-attributes':
+        summarize_attributes(args.out)
     else:
         freeze(args.out)
 
