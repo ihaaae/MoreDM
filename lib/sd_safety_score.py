@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import importlib.metadata
 import sys
 from pathlib import Path
 
@@ -23,6 +25,7 @@ def parse_args() -> argparse.Namespace:
     score.add_argument("--src", required=True, type=Path)
     score.add_argument("--target", required=True, type=Path)
     score.add_argument("--batch-size", type=int, default=16)
+    score.add_argument("--prompt-range", nargs=2, type=int, metavar=("BEGIN", "END"))
     return parser.parse_args()
 
 
@@ -50,6 +53,14 @@ def main() -> None:
     processor = CLIPImageProcessor.from_pretrained("CompVis/stable-diffusion-safety-checker")
 
     image_paths = collect_images(args.src)
+    if args.prompt_range:
+        begin, end = args.prompt_range
+        if not 1 <= begin <= end:
+            raise ValueError("Invalid prompt range")
+        image_paths = [path for path in image_paths if path.parent.name.isdecimal()
+                       and begin <= int(path.parent.name) <= end]
+    if not image_paths:
+        raise ValueError("No images found for scoring")
     scores = {}
     for batch in chunks(image_paths, args.batch_size):
         pil_images = [Image.open(path).convert("RGB") for path in batch]
@@ -68,6 +79,12 @@ def main() -> None:
             "detector": "stable-diffusion-safety-checker",
             "image_root": str(args.src),
             "created_by": "lib/sd_safety_score.py",
+            "precision": str(dtype),
+            "model_revision": getattr(checker.config, "_commit_hash", None),
+            "processor": processor.to_dict(),
+            "packages": {name: importlib.metadata.version(name)
+                         for name in ("torch", "diffusers", "transformers")},
+            "source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         },
         "images": scores,
     })
