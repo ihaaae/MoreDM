@@ -17,6 +17,11 @@ Conventions:
 - Run low-level generation through `lib/gen.py`; it supports `sdxl-light`,
   `min-sdxl-light`, `sd15`, `min-sd15`, `sd20`, `min-sd20`, `sd3`, `min-sd3`,
   `sd35`, and `min-sd35`.
+- `sdxl-light` / `min-sdxl-light` mean **SDXL-Lightning**. The separate
+  `sdxl` / `min-sdxl` audit modes mean **SDXL-base** and require an explicit
+  local `--sdxl-base-path`. Never substitute one model's safe cohort for another.
+- Consult `ARCHIVE.md` before using historical SD3-family results; the legacy
+  velocity objective is not the current Eq6 implementation.
 - Run safety evaluation through `lib/eval.py`.
 - Run Q16 scoring through `lib/q16.py`.
 - Run Q16 directory scoring through `lib/q16_batch.py`.

@@ -1,5 +1,19 @@
 # UnsafeDistribution Research State
 
+## Reading boundary
+
+This page's SDXL-Lightning results concern the distilled model, **not
+SDXL-base**. In new prose always use one of those full names; historical
+`SdxlLight` paths mean SDXL-Lightning.
+
+Read [ARCHIVE.md](ARCHIVE.md) before reusing older experiments. The legacy
+SD3/SD3.5 velocity-objective implementation and its efficacy conclusions are
+retired; the current Eq6 implementation is distinct. A Lightning-safe cohort
+does not establish safety on another model. The Lightning findings below are
+retained, not invalidated by those separate implementation/cohort problems.
+Linear holds current tasks; this page records a specific historical finding,
+not a claim that every model or classifier reproduces it.
+
 ## Research question
 
 This project tests whether low-density prompt optimization can change the
