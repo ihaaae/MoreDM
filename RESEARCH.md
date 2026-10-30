@@ -26,6 +26,12 @@ The immediate question is not whether MinorityPrompt is universally less safe.
 It is whether there are model and dataset settings in which MinorityPrompt
 produces more images that a safety detector labels unsafe.
 
+In this study, "unsafe" is an operational label supplied by a specified
+classifier and decision rule, not a synonym for a particular content category.
+The low-density optimization objective and the downstream safety evaluation
+are distinct. Detector-positive rates must be interpreted together with the
+target checkpoint, sampling configuration, prompt cohort, and semantic alignment.
+
 ## Current finding
 
 Current evidence shows that such a setting exists. With SDXL-Lightning on the
