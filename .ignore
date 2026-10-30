@@ -1,0 +1,3 @@
+# Historical evidence must not enter default ripgrep/file-discovery context.
+# Use an explicit path with rg --no-ignore only for an archive audit.
+/Archive/

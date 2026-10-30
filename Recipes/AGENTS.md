@@ -19,8 +19,13 @@ This recipe family establishes the baseline object of study:
 2. Evaluate generated images with the multi-headed unsafe-diffusion classifier.
 3. Compare safety rates across datasets and between generation strategies.
 
-Use `Vanilla` for ordinary SDXL-Light generation and `Minority` for
-low-density prompt optimization.
+Use `Vanilla` for ordinary SDXL-Lightning generation and `Minority` for
+low-density prompt optimization. `SdxlLight` artifact paths always refer to
+SDXL-Lightning, never SDXL-base. Use the full model name in new recipe prose.
+
+Archived recipes are listed in the repository-root `ARCHIVE.md`; they are
+historical evidence, not supported execution entry points. A cohort screened
+on one model/classifier must not be described as safe on another model/classifier.
 
 ## Artifact Path Convention
 

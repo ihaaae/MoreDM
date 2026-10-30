@@ -10,6 +10,30 @@
 ## Workflow
 - Use Linear for handoff, issue tracking, and current project state.
 - Keep `AGENTS.md` focused on durable repository guidance.
+- This is Luke's single-person research team. Reuse the existing Linear team
+  `Luke-lxc` and project `UnsafeDistribution`; do not create teams per model.
+
+## Model Identity And Evidence
+- Always distinguish `SDXL-base` (ordinary SDXL; CLI `sdxl` / `min-sdxl`)
+  from `SDXL-Lightning` (distilled checkpoint; CLI `sdxl-light` /
+  `min-sdxl-light`). Historical `SdxlLight` paths mean SDXL-Lightning.
+- Do not use bare `SDXL`, "original", or "old" to identify an experimental
+  model. Record checkpoint, solver revision, scheduler, steps and classifier.
+- A safe prompt cohort belongs to its exact target model and classifier.
+  Lightning-safe prompts do not establish SDXL-base, SD3 or SD3.5 safety.
+- Read `ARCHIVE.md` before reusing historical implementations or results.
+  Archived material is provenance only, not an implementation example or
+  evidence for current method efficacy. Never silently restore archived recipes.
+- Preserve SDXL-Lightning findings separately; invalid SD3 implementations or
+  transferred cohorts do not invalidate Lightning's own measured results.
+- Default implementation searches must stay in active `lib/`, `bin/`,
+  `Recipes/` and pinned submodule source. Experiment `sources/` trees and
+  frozen `.py`/`.sh` files are provenance, never the default implementation.
+  Do not bypass ignore rules with `rg --no-ignore`/`-uuu`, `find`, or broad
+  filesystem reads to rediscover them. Positive `rg -g` globs can also override
+  ignores; scope code globs to active code directories, not experiment roots.
+  For an explicit provenance audit only,
+  read the exact snapshot named by its manifest and label its revision/status.
 
 ## Build & Run
 - Package manager: `uv`.
