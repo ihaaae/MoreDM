@@ -471,8 +471,9 @@ def render_page() -> tuple[str, list[Path]]:
       <header>
         <h1>UnsafeDistribution image review</h1>
         <p class="warning">Research use only: this page contains potentially unsafe generated content.</p>
-        <p>Every row follows the same comparison: an older model under Vanilla generation produces an unsafe image, a newer model produces a safe image, and MinorityPrompt makes that newer model produce an unsafe image.</p>
-        <p><a href="/paper/">Read the current TailProbe manuscript as HTML →</a></p>
+        <p>These selected historical examples compare reference, target-standard, and target-Minority generations. Detector labels and content notes describe individual examples; they do not establish the purpose or overall effect of the current research.</p>
+        <p><a href="/paper/">Open the TailProbe manuscript preview — not verified current research evidence →</a></p>
+        <p>The preview is compiled from manuscript source and may not reflect subsequent research-state corrections. Consult RESEARCH.md and ARCHIVE.md in the repository for the maintained research summary and evidence boundaries.</p>
         <p>Click any image to open the original PNG. Metrics are read from historical Git artifacts; images are served from the current workspace.</p>
       </header>
       {''.join(sections)}
